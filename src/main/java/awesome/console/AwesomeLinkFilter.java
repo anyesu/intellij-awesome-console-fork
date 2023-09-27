@@ -28,12 +28,37 @@ import java.util.stream.Collectors;
 public class AwesomeLinkFilter implements Filter {
 	private static final Logger logger = Logger.getInstance(AwesomeLinkFilter.class);
 
+	// JediTerm Unicode private use area U+100000–U+10FFFD
+	public static final String DWC = "\uE000"; // Second part of double-width character
+
+	public static final String REGEX_ROW_COL = "(?i:\\s*(?:,\\s*line|:\\s*\\[?|\\()\\s*(?<row>\\d+)(?:\\s*[:,](?:\\s*col(?:umn)?)?\\s*(?<col>\\d+)(\\s*[)\\]])?)?)?";
+
+	public static final String REGEX_SEPARATOR = "[\\\\/]+";
+
+	public static final String REGEX_CHAR = String.format("[^\\\\/:*?\"<>|\\s]%s?", DWC);
+
+	public static final String REGEX_DRIVE = "(?:\\.+|~|[a-zA-Z]:|)?" + REGEX_SEPARATOR;
+
+	public static final String REGEX_FILE_NAME = String.format("(?:%s)+(?<![,(])", REGEX_CHAR);
+
+	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
+
+	public static final String REGEX_PATH_WITH_SPACE = String.format(
+			"\"(?<spacePath>(?:%s)?(?:(?:%s%s)*)(?:%s))\"",
+			REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR, REGEX_FILE_NAME_WITH_SPACE
+	);
+
+	public static final String REGEX_PATH = String.format(
+			"(?<path>(?:%s)?(?:(?:%s%s)*)(?:%s))",
+			REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR, REGEX_FILE_NAME
+	);
+
 	public static final Pattern FILE_PATTERN = Pattern.compile(
-			"(?<link>(?<path>\"?([.~])?(([a-zA-Z]:)?[\\\\/])?\\w[@\\w/\\-.\\\\]*\\.[\\w\\-.]+)\\$?" +
-			"(?:(?::|\"?, line |:\\[|\\()(?<row>\\d+)(?:[:,]( column )?(?<col>\\d+)([)\\]])?)?)?)",
+			String.format("(?<link>(%s|%s)\\$?%s)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
 			Pattern.UNICODE_CHARACTER_CLASS);
+
 	public static final Pattern URL_PATTERN = Pattern.compile(
-			"(?<link>[(']?(?<protocol>(([a-zA-Z]+):)?([/\\\\~]))(?<path>[-.!~*\\\\'()\\w;/?:@&=+$,%#]+))",
+			"(?<link>[(']?(?<protocol>(([a-zA-Z]+):)?([/\\\\~]))(?<path>([-.!~*\\\\'()\\w;/?:@&=+$,%#]" + DWC + "?)+))",
 			Pattern.UNICODE_CHARACTER_CLASS);
 	private static final int maxSearchDepth = 1;
 
@@ -66,14 +91,21 @@ public class AwesomeLinkFilter implements Filter {
 		int offset = 0;
 
 		for (final String chunk : chunks) {
+			results.addAll(getResultItemsFile(chunk, startPoint + offset));
 			if (config.SEARCH_URLS) {
 				results.addAll(getResultItemsUrl(chunk, startPoint + offset));
 			}
-			results.addAll(getResultItemsFile(chunk, startPoint + offset));
 			offset += chunk.length();
 		}
 
 		return new Result(results);
+	}
+
+	/**
+	 * ref: https://github.com/JetBrains/jediterm/commit/5a05fe18a1a3475a157dbdda6448f682678f55fb#diff-0065f89b4f46c30f15e7ca66d3626b43b41f8c30c9d064743304fe8304186a06R1036-R1039
+	 */
+	private String decodeDwc(@NotNull final String s) {
+		return s.replace(DWC, "");
 	}
 
 	public List<String> splitLine(final String line) {
@@ -262,16 +294,19 @@ public class AwesomeLinkFilter implements Filter {
 		final List<FileLinkMatch> results = new LinkedList<>();
 		while (fileMatcher.find()) {
 			final String match = fileMatcher.group("link");
-			final String path = fileMatcher.group("path");
+			String path = fileMatcher.group("spacePath");
+			if (path == null) {
+				path = fileMatcher.group("path");
+			}
 			if (null == path) {
 				logger.error("Regex group 'path' was NULL while trying to match path line: " + line + "\nfor match: " + match);
 				continue;
 			}
 			final int row = IntegerUtil.parseInt(fileMatcher.group("row")).orElse(0);
 			final int col = IntegerUtil.parseInt(fileMatcher.group("col")).orElse(0);
-			results.add(new FileLinkMatch(match, path,
-					fileMatcher.start(), fileMatcher.end(),
-					row, col));
+			results.add(new FileLinkMatch(decodeDwc(match), decodeDwc(path),
+										  fileMatcher.start(), fileMatcher.end(),
+										  row, col));
 		}
 		return results;
 	}
@@ -287,6 +322,8 @@ public class AwesomeLinkFilter implements Filter {
 				logger.error("Regex group 'link' was NULL while trying to match url line: " + line);
 				continue;
 			}
+
+			match = decodeDwc(match);
 
 			int startOffset = 0;
 			int endOffset = 0;
