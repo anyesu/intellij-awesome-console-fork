@@ -39,7 +39,7 @@ public class AwesomeLinkFilter implements Filter {
 
 	public static final String REGEX_DRIVE = "(?:\\.+|~|[a-zA-Z]:|)?" + REGEX_SEPARATOR;
 
-	public static final String REGEX_FILE_NAME = String.format("(?:%s)+(?<![,(])", REGEX_CHAR);
+	public static final String REGEX_FILE_NAME = String.format("(?:%s)+(?<![,()])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
@@ -54,7 +54,7 @@ public class AwesomeLinkFilter implements Filter {
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
-			String.format("(?<link>(%s|%s)\\$?%s)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
+			String.format("(?<link>\\(?(%s|%s)\\$?%s\\)?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
@@ -287,13 +287,22 @@ public class AwesomeLinkFilter implements Filter {
 		return false;
 	}
 
+	private boolean isSurroundedBy(@NotNull final String s, @NotNull final String[] pairs) {
+		for (final String pair : pairs) {
+			if (s.startsWith(String.valueOf(pair.charAt(0))) && s.endsWith(String.valueOf(pair.charAt(1)))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@NotNull
 	public List<FileLinkMatch> detectPaths(@NotNull final String line) {
 		final Matcher fileMatcher = this.fileMatcher.get();
 		fileMatcher.reset(line);
 		final List<FileLinkMatch> results = new LinkedList<>();
 		while (fileMatcher.find()) {
-			final String match = fileMatcher.group("link");
+			String match = fileMatcher.group("link");
 			String path = fileMatcher.group("spacePath");
 			if (path == null) {
 				path = fileMatcher.group("path");
@@ -304,9 +313,18 @@ public class AwesomeLinkFilter implements Filter {
 			}
 			final int row = IntegerUtil.parseInt(fileMatcher.group("row")).orElse(0);
 			final int col = IntegerUtil.parseInt(fileMatcher.group("col")).orElse(0);
-			results.add(new FileLinkMatch(decodeDwc(match), decodeDwc(path),
-										  fileMatcher.start(), fileMatcher.end(),
-										  row, col));
+			match = decodeDwc(match);
+			int offset = 0;
+			if (isSurroundedBy(match, new String[]{"()"})) {
+				match = match.substring(1, match.length() - 1);
+				offset = 1;
+			}
+			results.add(new FileLinkMatch(
+					match, decodeDwc(path),
+					fileMatcher.start() + offset,
+					fileMatcher.end() - offset,
+					row, col
+			));
 		}
 		return results;
 	}
