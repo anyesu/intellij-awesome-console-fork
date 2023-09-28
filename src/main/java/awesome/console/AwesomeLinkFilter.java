@@ -39,18 +39,20 @@ public class AwesomeLinkFilter implements Filter {
 
 	public static final String REGEX_DRIVE = "(?:\\.+|~|[a-zA-Z]:|)?" + REGEX_SEPARATOR;
 
+	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
+
 	public static final String REGEX_FILE_NAME = String.format("(?:%s)+(?<![,()])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
 	public static final String REGEX_PATH_WITH_SPACE = String.format(
-			"\"(?<spacePath>(?:%s)?(?:(?:%s%s)*)(?:%s))\"",
-			REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR, REGEX_FILE_NAME_WITH_SPACE
+			"\"(?<spacePath>(?<protocol1>%s)?(?:%s)?(?:(?:%s%s)*)(?:%s))\"",
+			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR, REGEX_FILE_NAME_WITH_SPACE
 	);
 
 	public static final String REGEX_PATH = String.format(
-			"(?<path>(?:%s)?(?:(?:%s%s)*)(?:%s))",
-			REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR, REGEX_FILE_NAME
+			"(?<path>(?<protocol2>%s)?(?:%s)?(?:(?:%s%s)*)(?:%s))",
+			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR, REGEX_FILE_NAME
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
@@ -302,6 +304,10 @@ public class AwesomeLinkFilter implements Filter {
 		fileMatcher.reset(line);
 		final List<FileLinkMatch> results = new LinkedList<>();
 		while (fileMatcher.find()) {
+			if (null != fileMatcher.group("protocol1") || null != fileMatcher.group("protocol2")) {
+				// ignore url
+				continue;
+			}
 			String match = fileMatcher.group("link");
 			String path = fileMatcher.group("spacePath");
 			if (path == null) {
