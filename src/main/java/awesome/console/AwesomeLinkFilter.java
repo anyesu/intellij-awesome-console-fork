@@ -16,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
+import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -167,6 +168,36 @@ public class AwesomeLinkFilter implements Filter {
 		return null;
 	}
 
+	private File resolveFile(@NotNull String path) {
+		if (FileUtils.isUncPath(path)) {
+			return null;
+		}
+		final Matcher driveMatcher = this.driveMatcher.get();
+		String basePath = null;
+		if (path.startsWith(".") || !driveMatcher.reset(path).find()) {
+			basePath = project.getBasePath();
+		}
+		try {
+			// if basePath is null, path is assumed to be absolute.
+			return new File(new File(basePath, path).getCanonicalPath());
+		} catch (IOException e) {
+			logger.error(String.format("Unable to resolve file path: \"%s\" with basePath \"%s\"", path, basePath));
+			logger.error(e);
+			return null;
+		}
+	}
+
+	private boolean isExternal(@NotNull File file) {
+		String basePath = project.getBasePath();
+		if (null == basePath) {
+			return false;
+		}
+		if (!basePath.endsWith("/")) {
+			basePath += "/";
+		}
+		return !file.getAbsolutePath().replace("\\", "/").startsWith(basePath);
+	}
+
 	public List<ResultItem> getResultItemsFile(final String line, final int startPoint) {
 		final List<ResultItem> results = new ArrayList<>();
 		final HyperlinkInfoFactory hyperlinkInfoFactory = HyperlinkInfoFactory.getInstance();
@@ -174,6 +205,19 @@ public class AwesomeLinkFilter implements Filter {
 		final List<FileLinkMatch> matches = detectPaths(line);
 
 		for(final FileLinkMatch match: matches) {
+			File file = resolveFile(match.path);
+			if (null != file && (isExternal(file) || file.isDirectory())) {
+				if (FileUtils.quickExists(file.getAbsolutePath())) {
+					results.add(
+							new Result(
+									startPoint + match.start,
+									startPoint + match.end,
+									new OpenUrlHyperlinkInfo(file.getAbsolutePath()))
+					);
+				}
+				continue;
+			}
+
 			final String path = PathUtil.getFileName(match.path);
 			List<VirtualFile> matchingFiles = fileCache.get(path);
 
