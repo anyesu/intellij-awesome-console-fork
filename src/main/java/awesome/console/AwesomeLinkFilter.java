@@ -3,6 +3,7 @@ package awesome.console;
 import awesome.console.config.AwesomeConsoleConfig;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
+import awesome.console.util.FileUtils;
 import awesome.console.util.IntegerUtil;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
@@ -62,6 +63,9 @@ public class AwesomeLinkFilter implements Filter {
 	public static final Pattern URL_PATTERN = Pattern.compile(
 			"(?<link>[(']?(?<protocol>(([a-zA-Z]+):)?([/\\\\~]))(?<path>([-.!~*\\\\'()\\w;/?:@&=+$,%#]" + DWC + "?)+))",
 			Pattern.UNICODE_CHARACTER_CLASS);
+
+	public static final Pattern DRIVE_PATTERN = Pattern.compile(String.format("^(?<drive>%s)", REGEX_DRIVE));
+
 	private static final int maxSearchDepth = 1;
 
 	private final AwesomeConsoleConfig config;
@@ -71,6 +75,7 @@ public class AwesomeLinkFilter implements Filter {
 	private final List<String> srcRoots;
 	private final ThreadLocal<Matcher> fileMatcher = ThreadLocal.withInitial(() -> FILE_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> urlMatcher = ThreadLocal.withInitial(() -> URL_PATTERN.matcher(""));
+	private final ThreadLocal<Matcher> driveMatcher = ThreadLocal.withInitial(() -> DRIVE_PATTERN.matcher(""));
 	private final ProjectRootManager projectRootManager;
 
 	public AwesomeLinkFilter(final Project project) {
@@ -137,7 +142,7 @@ public class AwesomeLinkFilter implements Filter {
 		for (final URLLinkMatch match : matches) {
 			final String file = getFileFromUrl(match.match);
 
-			if (null != file && !new File(file).exists()) {
+			if (null != file && !FileUtils.quickExists(file)) {
 				continue;
 			}
 			results.add(
@@ -151,7 +156,8 @@ public class AwesomeLinkFilter implements Filter {
 	}
 
 	public String getFileFromUrl(final String url) {
-		if (url.startsWith("/")) {
+		final Matcher driveMatcher = this.driveMatcher.get();
+		if (driveMatcher.reset(url).find()) {
 			return url;
 		}
 		final String fileUrl = "file://";
