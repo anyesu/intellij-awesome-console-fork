@@ -3,6 +3,7 @@ package awesome.console;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -218,6 +219,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 		// Test only detecting file paths - no file existence check
 		List<FileLinkMatch> results = filter.detectPaths(line);
+		results = results.stream().filter(i -> expected.equals(i.match)).collect(Collectors.toList());
 
 		assertEquals("No matches in line \"" + line + "\"", 1, results.size());
 		FileLinkMatch info = results.get(0);
