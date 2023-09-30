@@ -33,13 +33,13 @@ public class AwesomeLinkFilter implements Filter {
 	// JediTerm Unicode private use area U+100000–U+10FFFD
 	public static final String DWC = "\uE000"; // Second part of double-width character
 
-	public static final String REGEX_ROW_COL = "(?i:\\s*(?:,\\s*line|:\\s*\\[?|\\()\\s*(?<row>\\d+)(?:\\s*[:,](?:\\s*col(?:umn)?)?\\s*(?<col>\\d+)(\\s*[)\\]])?)?)?";
+	public static final String REGEX_ROW_COL = "(?i:\\s*(?:,\\s*line|:\\s*\\[?|\\()\\s*(?<row>\\d+)(?:\\s*[:,](?:\\s*col(?:umn)?)?\\s*(?<col>\\d+)(?:\\s*[)\\]])?)?)?";
 
 	public static final String REGEX_SEPARATOR = "[\\\\/]+";
 
 	public static final String REGEX_CHAR = String.format("[^\\\\/:*?\"<>|\\s]%s?", DWC);
 
-	public static final String REGEX_DRIVE = "(?:\\.+|~|[a-zA-Z]:|)?" + REGEX_SEPARATOR;
+	public static final String REGEX_DRIVE = "(?:~|[a-zA-Z]:)?" + REGEX_SEPARATOR;
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
@@ -48,17 +48,17 @@ public class AwesomeLinkFilter implements Filter {
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
 	public static final String REGEX_PATH_WITH_SPACE = String.format(
-			"\"(?<spacePath>(?<protocol1>%s)?(?:%s)?(?:(?:%s%s)*)(?:%s))\"",
-			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR, REGEX_FILE_NAME_WITH_SPACE
+			"\"(?<spacePath>(?<protocol1>%s)?(%s)?((%s|%s)+))\"",
+			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR
 	);
 
 	public static final String REGEX_PATH = String.format(
-			"(?<path>(?<protocol2>%s)?(?:%s)?(?:(?:%s%s)*)(?:%s))",
-			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR, REGEX_FILE_NAME
+			"(?<path>(?<protocol2>%s)?(%s)?((%s|%s)+))",
+			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
-			String.format("(?<link>\\(?(%s|%s)\\$?%s\\)?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
+			String.format("(?<link>\\(?(?:%s|%s)\\$?%s\\)?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
