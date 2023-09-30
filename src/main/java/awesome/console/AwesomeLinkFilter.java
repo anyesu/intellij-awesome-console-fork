@@ -354,17 +354,25 @@ public class AwesomeLinkFilter implements Filter {
 		fileMatcher.reset(line);
 		final List<FileLinkMatch> results = new LinkedList<>();
 		while (fileMatcher.find()) {
-			if (null != fileMatcher.group("protocol1") || null != fileMatcher.group("protocol2")) {
-				// ignore url
-				continue;
-			}
 			String match = fileMatcher.group("link");
 			String path = fileMatcher.group("spacePath");
-			if (path == null) {
+			if (null == path) {
 				path = fileMatcher.group("path");
 			}
 			if (null == path) {
 				logger.error("Regex group 'path' was NULL while trying to match path line: " + line + "\nfor match: " + match);
+				continue;
+			}
+			String protocol = fileMatcher.group("protocol1");
+			if (null == protocol) {
+				protocol = fileMatcher.group("protocol2");
+			}
+			if ("file://".equalsIgnoreCase(protocol)) {
+				int offset = protocol.length();
+				match = match.substring(offset);
+				path = path.substring(offset);
+			} else if (null != protocol) {
+				// ignore url
 				continue;
 			}
 			final int row = IntegerUtil.parseInt(fileMatcher.group("row")).orElse(0);
