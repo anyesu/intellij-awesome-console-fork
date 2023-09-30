@@ -156,9 +156,13 @@ public class AwesomeLinkFilter implements Filter {
 		return results;
 	}
 
-	public String getFileFromUrl(final String url) {
+	private boolean isAbsolutePath(@NotNull final String path) {
 		final Matcher driveMatcher = this.driveMatcher.get();
-		if (driveMatcher.reset(url).find()) {
+		return driveMatcher.reset(path).find();
+	}
+
+	public String getFileFromUrl(@NotNull final String url) {
+		if (isAbsolutePath(url)) {
 			return url;
 		}
 		final String fileUrl = "file://";
@@ -172,11 +176,7 @@ public class AwesomeLinkFilter implements Filter {
 		if (FileUtils.isUncPath(path)) {
 			return null;
 		}
-		final Matcher driveMatcher = this.driveMatcher.get();
-		String basePath = null;
-		if (path.startsWith(".") || !driveMatcher.reset(path).find()) {
-			basePath = project.getBasePath();
-		}
+		String basePath = isAbsolutePath(path) ? null : project.getBasePath();
 		try {
 			// if basePath is null, path is assumed to be absolute.
 			return new File(new File(basePath, path).getCanonicalPath());
