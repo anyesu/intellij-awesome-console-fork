@@ -2,7 +2,7 @@ package awesome.console.match;
 
 public class FileLinkMatch {
 	public final String match; // Full link match (with additional info, such as row and col)
-	public final String path; // Just path - no additional info
+	public String path; // Just path - no additional info
 	public final int linkedRow;
 	public final int linkedCol;
 	public final int start;

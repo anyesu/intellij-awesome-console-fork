@@ -216,6 +216,8 @@ public class AwesomeLinkFilter implements Filter {
 					);
 				}
 				continue;
+			} else if (null != file) {
+				match.path = file.getAbsolutePath();
 			}
 
 			final String path = PathUtil.getFileName(match.path);
