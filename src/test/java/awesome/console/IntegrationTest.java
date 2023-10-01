@@ -4,9 +4,12 @@ public class IntegrationTest {
 	public static void main(final String[] args) {
 		System.out.println(AwesomeLinkFilter.FILE_PATTERN);
 		System.out.println(AwesomeLinkFilter.URL_PATTERN);
+		System.out.println("Just a file: testfile ");
+		System.out.println("Just a file: .gitignore ");
 		System.out.println("Just a file: file1.java");
 		System.out.println("Just a file with line num: file1.java:5");
 		System.out.println("Just a file with line num and col: file1.java:5:3");
+		System.out.println("Just a file with line num and col: file1.java:    5  :   3      ");
 		System.out.println("Just a file with line num and col: file1.java:1606293360891972:1606293360891972");
 		System.out.println("Just a file with line num and col: file_with.special-chars.js:5:3");
 		System.out.println("Just a file with path: resources/file1.java");
@@ -22,9 +25,13 @@ public class IntegrationTest {
 		System.out.println("omfg something: ftp://8.8.8.8:2424 yay");
 		System.out.println("omfg something: file:///tmp yay");
 		System.out.println("omfg something: ftp://user:password@xkcd.com:1337/some/path yay");
+		System.out.println("C:\\Windows\\Temp\\");
 		System.out.println("C:\\Windows\\Temp");
 		System.out.println("C:\\Windows/Temp");
 		System.out.println("C:/Windows/Temp");
+		System.out.println("C:\\\\");
+		System.out.println("C:\\      (by GenericFileFilter)");
+		System.out.println("C:");
 		System.out.println("omfg something: file://C:/Windows yay");
 		System.out.println("[DEBUG] src/test/resources/file1.java:[4,4] cannot find symbol");
 		System.out.println("awesome.console.AwesomeLinkFilter:5");
@@ -38,6 +45,8 @@ public class IntegrationTest {
 		System.out.println("C:/Windows/Temp,");
 		System.out.println("C:/Windows/Temp/test.tsx:5:3");
 		System.out.println("Just a file: src/test/resources/file1.java, line 2, column 2");
+		System.out.println("Just a file: src/test/resources/file1.java, line 2, coL 3");
+		System.out.println("Just a file: src/test/resources/file1.java( 5 ,  4   )    ");
 		System.out.println("Just a file with path: file://resources/file1.java:5:4");
 		System.out.println("Just a file with path: C:\\integration\\file1.java:5:4");
 		System.out.println("colon at the end: resources/file1.java:5:1:");
@@ -46,5 +55,24 @@ public class IntegrationTest {
 		System.out.println("regular class name [awesome.console.IntegrationTest:4]");
 		System.out.println("scala class name [awesome.console.IntegrationTest$:4]");
 		System.out.println("C:/project/node_modules/typescript/lib/lib.webworker.d.ts:1930:6:");
+
+		System.out.println();
+		System.out.println("Just a file with path contains \".\" and \"..\": ./src/test/resources/subdir/./file1.java");
+		System.out.println("Just a file with path contains \".\" and \"..\": ./src/test/resources/subdir/../file1.java");
+
+		System.out.println("UNC path should not be highlighted: \\\\localhost\\c$");
+		System.out.println("UNC path should not be highlighted: \\\\server\\share\\folder\\myfile.txt");
+		System.out.println("UNC path correctly processed by UrlFilter: file://///localhost/c$");
+
+		System.out.println("Path with space: src/test/resources/中文 空格.txt");
+		System.out.println("Path enclosed in double quotes: \"C:\\Program Files (x86)\\Windows NT\" ");
+		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\" ");
+		System.out.println("Path enclosed in double quotes: \"  src/test/resources/中文 空格.txt  \" ");
+		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\":5:4 ");
+		System.out.println("Path enclosed in double quotes: \"src/test/resources/subdir/file1.java\" ");
+		System.out.println("Path enclosed in double quotes: (the file name or folder name start with space or end with space)");
+		System.out.println("    \"src/test/  resources/subdir/file1.java\" ");
+		System.out.println("    \"src/test/resources/subdir/ file1.java\" ");
+		System.out.println("    \"src/test/resources/subdir /file1.java\" ");
 	}
 }

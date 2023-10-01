@@ -4,7 +4,6 @@ import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import java.util.stream.Collectors;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -108,16 +107,16 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("bla-bla at ./foobar/AwesomeConsole.py:1337:42 something", "./foobar/AwesomeConsole.py:1337:42", 1337, 42);
 	}
 
-	@Ignore
 	@Test
-	public void ignore_testFileWithoutExtensionInRelativeDirectory() {
-		// TODO: detect files without extension
+	public void testFileWithoutExtensionInRelativeDirectory() {
+		// detect files without extension
 		assertPathDetection("No extension: bin/script pewpew", "bin/script");
+		assertPathDetection("No extension: testfile", "testfile");
 	}
 
 	@Test
-	public void test_unicore_path_filename() {
-		assertPathDetection("No extension: 中.txt yay", "中.txt");
+	public void test_unicode_path_filename() {
+		assertPathDetection("unicode 中.txt yay", "中.txt");
 	}
 
 	@Test
@@ -168,6 +167,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testURLFILE() {
 		assertURLDetection("omfg something: file:///home/root yay", "file:///home/root");
+		assertPathDetection("omfg something: file:///home/root yay", "/home/root");
 	}
 
 	@Test
@@ -204,6 +204,50 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testAngularJSAtModule() {
 		assertPathDetection("src/app/@app/app.module.ts:42:5", "src/app/@app/app.module.ts:42:5",42, 5);
+	}
+
+	@Test
+	public void testPathColonAtTheEnd() {
+		assertPathDetection("colon at the end: resources/file1.java:5:1:", "resources/file1.java:5:1", 5, 1);
+		assertPathDetection("colon at the end: C:\\integration\\file1.java:5:4:", "C:\\integration\\file1.java:5:4", 5, 4);
+	}
+
+	@Test
+	public void testLineNumberAndColumnWithVariableWhitespace() {
+		assertPathDetection("With line: file1.java: 5  :   5 ", "file1.java: 5  :   5", 5, 5);
+		assertPathDetection("With line: src/test.js:  55   ", "src/test.js:  55", 55);
+		assertPathDetection("From stack trace: src\\api\\service.ts( 29  ,   50 )  ", "src\\api\\service.ts( 29  ,   50 )", 29, 50);
+		assertPathDetection("/home/me/project/run.java:[ 245  ,   15  ] ", "/home/me/project/run.java:[ 245  ,   15  ]", 245, 15);
+		assertPathDetection("bla-bla at (AwesomeLinkFilter.java:  150) something", "AwesomeLinkFilter.java:  150", 150);
+	}
+
+	@Test
+	public void testPathWithSingleDotOrDoubleDot() {
+		assertPathDetection("Path: . ", ".");
+		assertPathDetection("Path: .. ", "..");
+		assertPathDetection("File: .gitignore ", ".gitignore");
+		assertPathDetection("File ./src/test/resources/subdir/./file1.java", "./src/test/resources/subdir/./file1.java");
+		assertPathDetection("File ./src/test/resources/subdir/../file1.java", "./src/test/resources/subdir/../file1.java");
+	}
+
+	@Test
+	public void testUncPath() {
+		assertPathDetection("UNC path: \\\\localhost\\c$", "\\\\localhost\\c$");
+		assertPathDetection("UNC path: \\\\server\\share\\folder\\myfile.txt", "\\\\server\\share\\folder\\myfile.txt");
+		assertPathDetection("UNC path: file://///localhost/c$", "///localhost/c$");
+	}
+
+	@Test
+	public void testPathWithQuotes() {
+		assertPathDetection("Path: src/test/resources/中文 空格.txt ", "空格.txt");
+		assertPathDetection("Path: \"C:\\Program Files (x86)\\Windows NT\" ", "\"C:\\Program Files (x86)\\Windows NT\"");
+		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\" ", "\"src/test/resources/中文 空格.txt\"");
+		assertPathDetection("Path: \"  src/test/resources/中文 空格.txt  \" ", "空格.txt");
+		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\":5:4 ", "\"src/test/resources/中文 空格.txt\":5:4");
+		assertPathDetection("Path: \"src/test/resources/subdir/file1.java\" ", "\"src/test/resources/subdir/file1.java\"");
+		assertPathDetection("Path: \"src/test/  resources/subdir/file1.java\" ", "resources/subdir/file1.java");
+		assertPathDetection("Path: \"src/test/resources/subdir/ file1.java\" ", "file1.java");
+		assertPathDetection("Path: \"src/test/resources/subdir /file1.java\" ", "/file1.java");
 	}
 
 	private void assertPathDetection(final String line, final String expected) {
