@@ -370,9 +370,8 @@ public class AwesomeLinkFilter implements Filter {
 				protocol = fileMatcher.group("protocol2");
 			}
 			if ("file://".equalsIgnoreCase(protocol)) {
-				int offset = protocol.length();
-				match = match.substring(offset);
-				path = path.substring(offset);
+				match = match.replace(protocol, "");
+				path = path.substring(protocol.length());
 			} else if (null != protocol) {
 				// ignore url
 				continue;

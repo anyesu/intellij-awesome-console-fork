@@ -67,6 +67,7 @@ public class IntegrationTest {
 		System.out.println("Path with space: src/test/resources/中文 空格.txt");
 		System.out.println("Path enclosed in double quotes: \"C:\\Program Files (x86)\\Windows NT\" ");
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\" ");
+		System.out.println("Path enclosed in double quotes: \"file://src/test/resources/中文 空格.txt\" ");
 		System.out.println("Path enclosed in double quotes: \"  src/test/resources/中文 空格.txt  \" ");
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\":5:4 ");
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/subdir/file1.java\" ");

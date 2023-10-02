@@ -242,6 +242,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Path: src/test/resources/中文 空格.txt ", "空格.txt");
 		assertPathDetection("Path: \"C:\\Program Files (x86)\\Windows NT\" ", "\"C:\\Program Files (x86)\\Windows NT\"");
 		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\" ", "\"src/test/resources/中文 空格.txt\"");
+		assertPathDetection("path: \"file://src/test/resources/中文 空格.txt\" ", "\"src/test/resources/中文 空格.txt\"");
 		assertPathDetection("Path: \"  src/test/resources/中文 空格.txt  \" ", "空格.txt");
 		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\":5:4 ", "\"src/test/resources/中文 空格.txt\":5:4");
 		assertPathDetection("Path: \"src/test/resources/subdir/file1.java\" ", "\"src/test/resources/subdir/file1.java\"");
