@@ -251,8 +251,52 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Path: \"src/test/resources/subdir /file1.java\" ", "/file1.java");
 	}
 
-	private void assertPathDetection(final String line, final String expected) {
+	@Test
+	public void testPathSeparatedByCommaOrSemicolon() {
+		assertPathDetection(
+				"Comma or semicolon separated paths: C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java",
+				"C:\\integration\\file1.java",
+				"C:\\integration\\file2.java",
+				"C:\\integration\\file3.java"
+		);
+		assertPathDetection(
+				"Comma or semicolon separated paths: C:\\integration\\file1.java:20:1,C:\\integration\\file2.java:20:2;C:\\integration\\file3.java:20:3",
+				"C:\\integration\\file1.java:20:1",
+				"C:\\integration\\file2.java:20:2",
+				"C:\\integration\\file3.java:20:3"
+		);
+		assertPathDetection(
+				"Comma or semicolon separated paths: /tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
+				"/tmp/file1.java",
+				"/tmp/file2.java",
+				"/tmp/file3.java"
+		);
+		assertPathDetection(
+				"Comma or semicolon separated paths: /tmp/file1.java:20:1,/tmp/file2.java:20:2;/tmp/file3.java:20:3",
+				"/tmp/file1.java:20:1",
+				"/tmp/file2.java:20:2",
+				"/tmp/file3.java:20:3"
+		);
+		// TODO
+		// assertPathDetection(
+		// 		"Comma or semicolon separated paths: src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile",
+		// 		"src/test/resources/file1.java",
+		// 		"src/test/resources/file1.py",
+		// 		"src/test/resources/testfile"
+		// );
+		assertPathDetection(
+				"Comma or semicolon separated paths: src/test/resources/file1.java:20:1,src/test/resources/file1.java:20:2;src/test/resources/file1.java:20:3",
+				"src/test/resources/file1.java:20:1",
+				"src/test/resources/file1.java:20:2",
+				"src/test/resources/file1.java:20:3"
+		);
+	}
+
+	private void assertPathDetection(final String line, final String expected, final String... more) {
 		assertPathDetection(line, expected, -1, -1);
+		for (String item : more) {
+			assertPathDetection(line, item, -1, -1);
+		}
 	}
 
 	private void assertPathDetection(final String line, final String expected, final int expectedRow) {

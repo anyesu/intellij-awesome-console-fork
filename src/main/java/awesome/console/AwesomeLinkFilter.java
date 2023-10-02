@@ -43,7 +43,7 @@ public class AwesomeLinkFilter implements Filter {
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
-	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\))(?:%s))+(?<![,()])", REGEX_CHAR);
+	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
@@ -58,7 +58,7 @@ public class AwesomeLinkFilter implements Filter {
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
-			String.format("(?<link>\\(?(?:%s|%s)\\$?%s\\)?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
+			String.format("(?![ ,;])(?<link>\\(?(?:%s|%s)\\$?%s\\)?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
