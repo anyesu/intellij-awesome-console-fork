@@ -89,7 +89,7 @@
 	]]></change-notes>
 	<depends>com.intellij.modules.lang</depends>
 	<extensions defaultExtensionNs="com.intellij">
-		<consoleFilterProvider implementation="awesome.console.AwesomeLinkFilterProvider"/>
+		<consoleFilterProvider implementation="awesome.console.AwesomeLinkFilterProvider" order="first"/>
 		<applicationConfigurable displayName="Awesome Console" id="awesome.console.config.AwesomeConsoleConfig" instance="awesome.console.config.AwesomeConsoleConfig"/>
 	</extensions>
 
