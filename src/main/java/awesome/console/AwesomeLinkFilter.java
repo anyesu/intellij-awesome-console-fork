@@ -365,6 +365,12 @@ public class AwesomeLinkFilter implements Filter {
 				logger.error("Regex group 'path' was NULL while trying to match path line: " + line + "\nfor match: " + match);
 				continue;
 			}
+
+			if ("/".equals(path) || "\\".equals(path)) {
+				// ignore the root directory as it matches a lot
+				continue;
+			}
+
 			String protocol = fileMatcher.group("protocol1");
 			if (null == protocol) {
 				protocol = fileMatcher.group("protocol2");
