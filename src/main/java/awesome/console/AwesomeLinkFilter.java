@@ -43,7 +43,7 @@ public class AwesomeLinkFilter implements Filter {
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
-	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()])", REGEX_CHAR);
+	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()\\]])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
@@ -58,7 +58,7 @@ public class AwesomeLinkFilter implements Filter {
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
-			String.format("(?![ ,;])(?<link>\\(?(?:%s|%s)\\$?%s\\)?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
+			String.format("(?![ ,;\\]])(?<link>[\\(\\[]?(?:%s|%s)%s[\\)\\]]?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
@@ -195,7 +195,7 @@ public class AwesomeLinkFilter implements Filter {
 		if (!basePath.endsWith("/")) {
 			basePath += "/";
 		}
-		return !file.getAbsolutePath().replace("\\", "/").startsWith(basePath);
+		return !generalizePath(file.getAbsolutePath()).startsWith(basePath);
 	}
 
 	public List<ResultItem> getResultItemsFile(final String line, final int startPoint) {
@@ -220,7 +220,10 @@ public class AwesomeLinkFilter implements Filter {
 				match.path = file.getAbsolutePath();
 			}
 
-			final String path = PathUtil.getFileName(match.path);
+			String path = PathUtil.getFileName(match.path);
+			if (path.endsWith("$")) {
+				path = path.substring(0, path.length() - 1);
+			}
 			List<VirtualFile> matchingFiles = fileCache.get(path);
 
 			if (null == matchingFiles) {
@@ -334,7 +337,7 @@ public class AwesomeLinkFilter implements Filter {
 
 	private boolean matchSource(final String parent, final String path) {
 		for (final String srcRoot : srcRoots) {
-			if ((srcRoot + File.separatorChar + path).equals(parent)) {
+			if (generalizePath(srcRoot + File.separatorChar + path).equals(parent)) {
 				return true;
 			}
 		}
@@ -386,7 +389,7 @@ public class AwesomeLinkFilter implements Filter {
 			final int col = IntegerUtil.parseInt(fileMatcher.group("col")).orElse(0);
 			match = decodeDwc(match);
 			int offset = 0;
-			if (isSurroundedBy(match, new String[]{"()"})) {
+			if (isSurroundedBy(match, new String[]{"()", "[]"})) {
 				match = match.substring(1, match.length() - 1);
 				offset = 1;
 			}
