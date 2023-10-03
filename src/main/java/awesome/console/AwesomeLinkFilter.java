@@ -242,12 +242,14 @@ public class AwesomeLinkFilter implements Filter {
 				matchingFiles = bestMatchingFiles;
 			}
 
+			// ref: https://github.com/JetBrains/intellij-community/blob/212.5080/platform/platform-impl/src/com/intellij/ide/util/GotoLineNumberDialog.java#L53-L55
 			final int row = match.linkedRow <= 0 ? 0 : match.linkedRow - 1;
+			final int col = match.linkedCol <= 0 ? 0 : match.linkedCol - 1;
 			final HyperlinkInfo linkInfo = hyperlinkInfoFactory.createMultipleFilesHyperlinkInfo(
 					matchingFiles,
 					row,
 					project,
-					(project, psiFile, editor, originalEditor) -> editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(row, match.linkedCol))
+					(project, psiFile, editor, originalEditor) -> editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(row, col))
 			);
 
 			results.add(new Result(
