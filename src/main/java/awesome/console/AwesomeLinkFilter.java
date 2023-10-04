@@ -15,8 +15,17 @@ import com.intellij.openapi.editor.VisualPosition;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.newvfs.BulkFileListener;
+import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent;
 import com.intellij.util.PathUtil;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,6 +87,12 @@ public class AwesomeLinkFilter implements Filter {
 	private final ThreadLocal<Matcher> urlMatcher = ThreadLocal.withInitial(() -> URL_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> driveMatcher = ThreadLocal.withInitial(() -> DRIVE_PATTERN.matcher(""));
 	private final ProjectRootManager projectRootManager;
+
+	private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
+
+	private final ReentrantReadWriteLock.ReadLock cacheReadLock = cacheLock.readLock();
+
+	private final ReentrantReadWriteLock.WriteLock cacheWriteLock = cacheLock.writeLock();
 
 	public AwesomeLinkFilter(final Project project) {
 		this.project = project;
@@ -224,16 +239,19 @@ public class AwesomeLinkFilter implements Filter {
 			if (path.endsWith("$")) {
 				path = path.substring(0, path.length() - 1);
 			}
-			List<VirtualFile> matchingFiles = fileCache.get(path);
 
-			if (null == matchingFiles) {
-				matchingFiles = getResultItemsFileFromBasename(path);
-				if (null == matchingFiles || matchingFiles.isEmpty()) {
-					continue;
+			List<VirtualFile> matchingFiles;
+			cacheReadLock.lock();
+			try {
+				matchingFiles = fileCache.get(path);
+				if (null == matchingFiles) {
+					matchingFiles = getResultItemsFileFromBasename(path);
 				}
+			} finally {
+				cacheReadLock.unlock();
 			}
 
-			if (matchingFiles.isEmpty()) {
+			if (null == matchingFiles || matchingFiles.isEmpty()) {
 				continue;
 			}
 
@@ -328,8 +346,80 @@ public class AwesomeLinkFilter implements Filter {
 	}
 
 	private void createFileCache() {
-		projectRootManager.getFileIndex().iterateContent(
-				new AwesomeProjectFilesIterator(fileCache, fileBaseCache));
+		AwesomeProjectFilesIterator iterator = new AwesomeProjectFilesIterator(fileCache, fileBaseCache);
+		projectRootManager.getFileIndex().iterateContent(iterator);
+
+		logger.info(String.format("project[%s]: init file cache", project.getName()));
+
+		// VFS listeners are application level and will receive events for changes happening in
+		// all the projects opened by the user. You may need to filter out events that aren't
+		// relevant to your task (e.g., via ProjectFileIndex.isInContent()).
+		// ref: https://plugins.jetbrains.com/docs/intellij/virtual-file-system.html#virtual-file-system-events
+		// ref: https://plugins.jetbrains.com/docs/intellij/virtual-file.html#how-do-i-get-notified-when-vfs-changes
+		project.getMessageBus().connect().subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
+			@Override
+			public void after(@NotNull List<? extends @NotNull VFileEvent> events) {
+				List<VirtualFile> newFiles = new ArrayList<>();
+				boolean deleteFile = false;
+
+				for (VFileEvent event : events) {
+					final VirtualFile file = event.getFile();
+					if (null == file || !isInContent(file, event instanceof VFileDeleteEvent)) {
+						continue;
+					}
+					if (event instanceof VFileCopyEvent) {
+						newFiles.add(((VFileCopyEvent) event).findCreatedFile());
+					} else if (event instanceof VFileCreateEvent) {
+						newFiles.add(file);
+					} else if (event instanceof VFileDeleteEvent) {
+						deleteFile = true;
+					} else if (event instanceof VFileMoveEvent) {
+						// No processing is required since the file name has not changed and
+						// the path to the virtual file will be updated automatically
+					} else if (event instanceof VFilePropertyChangeEvent) {
+						final VFilePropertyChangeEvent pce = (VFilePropertyChangeEvent) event;
+						// Rename file
+						if (VirtualFile.PROP_NAME.equals(pce.getPropertyName())
+								&& !Objects.equals(pce.getNewValue(), pce.getOldValue())) {
+							deleteFile = true;
+							newFiles.add(file);
+						}
+					}
+				}
+
+				if (newFiles.isEmpty() && !deleteFile) {
+					return;
+				}
+
+				cacheWriteLock.lock();
+				try {
+					// Since there is only one event for deleting a directory, simply clean up all the invalid files
+					if (deleteFile) {
+						fileCache.forEach((key, value) -> value.removeIf(it -> !it.isValid() || !key.equals(it.getName())));
+						fileBaseCache.forEach((key, value) -> value.removeIf(it -> !it.isValid() || !key.equals(it.getNameWithoutExtension())));
+					}
+					newFiles.forEach(iterator::processFile);
+					logger.info(String.format("project[%s]: flush file cache", project.getName()));
+				} finally {
+					cacheWriteLock.unlock();
+				}
+			}
+		});
+	}
+
+	private boolean isInContent(@NotNull VirtualFile file, boolean isDelete) {
+		if (isDelete) {
+			String basePath = project.getBasePath();
+			if (null == basePath) {
+				// Default project. Unlikely to happen.
+				return false;
+			}
+			if (!basePath.endsWith("/")) {
+				basePath += "/";
+			}
+			return file.getPath().startsWith(basePath);
+		}
+		return projectRootManager.getFileIndex().isInContent(file);
 	}
 
 	private List<String> getSourceRoots() {
