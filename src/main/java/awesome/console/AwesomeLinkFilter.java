@@ -5,6 +5,7 @@ import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import awesome.console.util.FileUtils;
 import awesome.console.util.IntegerUtil;
+import awesome.console.util.SystemUtils;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.HyperlinkInfoFactory;
@@ -477,6 +478,14 @@ public class AwesomeLinkFilter implements Filter {
 				// ignore url
 				continue;
 			}
+
+			// Resolve '~' to user's home directory
+			if ("~".equals(path)) {
+				path = SystemUtils.getUserHome();
+			} else if (path.startsWith("~/") || path.startsWith("~\\")) {
+				path = SystemUtils.getUserHome() + path.substring(1);
+			}
+
 			final int row = IntegerUtil.parseInt(fileMatcher.group("row")).orElse(0);
 			final int col = IntegerUtil.parseInt(fileMatcher.group("col")).orElse(0);
 			match = decodeDwc(match);

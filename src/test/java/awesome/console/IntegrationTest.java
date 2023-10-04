@@ -57,6 +57,9 @@ public class IntegrationTest {
 		System.out.println("C:/project/node_modules/typescript/lib/lib.webworker.d.ts:1930:6:");
 
 		System.out.println();
+		System.out.println("Just a file in user's home directory: ~/.gradle ");
+		System.out.println("Just a file in user's home directory: ~\\.gradle ");
+
 		System.out.println("Just a file with path contains \".\" and \"..\": ./src/test/resources/subdir/./file1.java");
 		System.out.println("Just a file with path contains \".\" and \"..\": ./src/test/resources/subdir/../file1.java");
 

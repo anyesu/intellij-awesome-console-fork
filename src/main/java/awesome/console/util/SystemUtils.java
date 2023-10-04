@@ -9,6 +9,9 @@ public class SystemUtils {
         return System.getProperty("os.name");
     }
 
+    public static String getUserHome() {
+        return System.getProperty("user.home");
+    }
 
     public static boolean isWindows() {
         String osName = getOsName();
