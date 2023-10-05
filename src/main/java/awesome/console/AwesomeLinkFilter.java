@@ -43,7 +43,7 @@ public class AwesomeLinkFilter implements Filter {
 	// JediTerm Unicode private use area U+100000–U+10FFFD
 	public static final String DWC = "\uE000"; // Second part of double-width character
 
-	public static final String REGEX_ROW_COL = "(?i:\\s*(?:,\\s*line|:\\s*\\[?|\\()\\s*(?<row>\\d+)(?:\\s*[:,](?:\\s*col(?:umn)?)?\\s*(?<col>\\d+)(?:\\s*[)\\]])?)?)?";
+	public static final String REGEX_ROW_COL = "(?i:\\s*(?:[:,]\\s*line|:\\s*\\[?|\\()\\s*(?<row>\\d+)(?:\\s*[:,](?:\\s*col(?:umn)?)?\\s*(?<col>\\d+)(?:\\s*[)\\]])?)?)?";
 
 	public static final String REGEX_SEPARATOR = "[\\\\/]+";
 

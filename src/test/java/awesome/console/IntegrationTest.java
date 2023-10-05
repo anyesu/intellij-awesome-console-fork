@@ -8,6 +8,7 @@ public class IntegrationTest {
 		System.out.println("Just a file: .gitignore ");
 		System.out.println("Just a file: file1.java");
 		System.out.println("Just a file with line num: file1.java:5");
+		System.out.println("Just a file with line num: file1.cs:line 4");
 		System.out.println("Just a file with line num and col: file1.java:5:3");
 		System.out.println("Just a file with line num and col: file1.java:    5  :   3      ");
 		System.out.println("Just a file with line num and col: file1.java:1606293360891972:1606293360891972");

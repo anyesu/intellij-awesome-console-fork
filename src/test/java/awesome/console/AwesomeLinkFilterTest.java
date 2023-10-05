@@ -207,6 +207,15 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	@Test
+	public void testCsharpStacktrace() {
+		assertPathDetection(
+				"at Program.<Main>$(String[] args) in H:\\test\\ConsoleApp\\ConsoleApp\\Program.cs:line 4",
+				"H:\\test\\ConsoleApp\\ConsoleApp\\Program.cs:line 4",
+				4
+		);
+	}
+
+	@Test
 	public void testPathColonAtTheEnd() {
 		assertPathDetection("colon at the end: resources/file1.java:5:1:", "resources/file1.java:5:1", 5, 1);
 		assertPathDetection("colon at the end: C:\\integration\\file1.java:5:4:", "C:\\integration\\file1.java:5:4", 5, 4);
@@ -219,6 +228,11 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("From stack trace: src\\api\\service.ts( 29  ,   50 )  ", "src\\api\\service.ts( 29  ,   50 )", 29, 50);
 		assertPathDetection("/home/me/project/run.java:[ 245  ,   15  ] ", "/home/me/project/run.java:[ 245  ,   15  ]", 245, 15);
 		assertPathDetection("bla-bla at (AwesomeLinkFilter.java:  150) something", "AwesomeLinkFilter.java:  150", 150);
+		assertPathDetection(
+				"at Program.<Main>$(String[] args) in H:\\test\\ConsoleApp\\ConsoleApp\\Program.cs:    line    4    ",
+				"H:\\test\\ConsoleApp\\ConsoleApp\\Program.cs:    line    4",
+				4
+		);
 	}
 
 	@Test
