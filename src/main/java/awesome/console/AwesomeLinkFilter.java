@@ -1,6 +1,6 @@
 package awesome.console;
 
-import awesome.console.config.AwesomeConsoleConfig;
+import awesome.console.config.AwesomeConsoleStorage;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import awesome.console.util.FileUtils;
@@ -81,7 +81,7 @@ public class AwesomeLinkFilter implements Filter {
 
 	private static final int maxSearchDepth = 1;
 
-	private final AwesomeConsoleConfig config;
+	private final AwesomeConsoleStorage config;
 	private final Map<String, List<VirtualFile>> fileCache;
 	private final Map<String, List<VirtualFile>> fileBaseCache;
 	private final Project project;
@@ -104,7 +104,7 @@ public class AwesomeLinkFilter implements Filter {
 		this.fileBaseCache = new ConcurrentHashMap<>();
 		projectRootManager = ProjectRootManager.getInstance(project);
 		srcRoots = getSourceRoots();
-		config = AwesomeConsoleConfig.getInstance();
+		config = AwesomeConsoleStorage.getInstance();
 
 		createFileCache();
 	}

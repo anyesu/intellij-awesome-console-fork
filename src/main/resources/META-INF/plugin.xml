@@ -91,11 +91,6 @@
 	<extensions defaultExtensionNs="com.intellij">
 		<consoleFilterProvider implementation="awesome.console.AwesomeLinkFilterProvider" order="first"/>
 		<applicationConfigurable displayName="Awesome Console" id="awesome.console.config.AwesomeConsoleConfig" instance="awesome.console.config.AwesomeConsoleConfig"/>
+		<applicationService serviceImplementation="awesome.console.config.AwesomeConsoleStorage"/>
 	</extensions>
-
-	<application-components>
-		<component>
-			<implementation-class>awesome.console.config.AwesomeConsoleConfig</implementation-class>
-		</component>
-	</application-components>
 </idea-plugin>

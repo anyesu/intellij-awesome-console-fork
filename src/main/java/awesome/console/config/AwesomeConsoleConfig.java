@@ -1,63 +1,43 @@
 package awesome.console.config;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.*;
 import com.intellij.openapi.options.Configurable;
-import com.intellij.util.xmlb.XmlSerializerUtil;
-import com.intellij.util.xmlb.annotations.Transient;
 import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-@State(
-		name = "Awesome Console Config",
-		storages = {
-				@Storage(value = "awesomeconsole.xml", roamingType = RoamingType.DISABLED)
-		}
-)
-public class AwesomeConsoleConfig implements PersistentStateComponent<AwesomeConsoleConfig>, Configurable {
-	public boolean SPLIT_ON_LIMIT = false;
-	public boolean LIMIT_LINE_LENGTH = true;
-	public int LINE_MAX_LENGTH = 1024;
-	public boolean SEARCH_URLS = true;
+/**
+ * For a Configurable implementation correctly declared using an EP, the implementation's
+ * constructor is not invoked by the IntelliJ Platform until a user chooses the corresponding
+ * Settings displayName in the Settings Dialog menu.
+ *
+ * A Configurable instance's lifetime ends when OK or Cancel is selected in the Settings
+ * Dialog. An instance's Configurable.disposeUIResources() is called when the Settings
+ * Dialog is closing.
+ *
+ * ref: https://plugins.jetbrains.com/docs/intellij/settings-guide.html
+ */
+public class AwesomeConsoleConfig implements Configurable {
 
-	@Transient
 	private AwesomeConsoleConfigForm form;
 
-	/**
-	 * PersistentStateComponent
-	 */
-	@Nullable
-	@Override
-	public AwesomeConsoleConfig getState() {
-		return this;
-	}
+	private final AwesomeConsoleStorage storage;
 
-	@Override
-	public void loadState(@NotNull final AwesomeConsoleConfig state) {
-		XmlSerializerUtil.copyBean(state, this);
-	}
-
-	/**
-	 * Helpers
-	 */
-	public static AwesomeConsoleConfig getInstance() {
-		return ApplicationManager.getApplication().getComponent(AwesomeConsoleConfig.class);
+	public AwesomeConsoleConfig() {
+		this.storage = AwesomeConsoleStorage.getInstance();
 	}
 
 	private void initFromConfig() {
-		form.limitLineMatchingByCheckBox.setSelected(LIMIT_LINE_LENGTH);
+		form.limitLineMatchingByCheckBox.setSelected(storage.LIMIT_LINE_LENGTH);
 
-		form.matchLinesLongerThanCheckBox.setEnabled(LIMIT_LINE_LENGTH);
-		form.matchLinesLongerThanCheckBox.setSelected(SPLIT_ON_LIMIT);
+		form.matchLinesLongerThanCheckBox.setEnabled(storage.LIMIT_LINE_LENGTH);
+		form.matchLinesLongerThanCheckBox.setSelected(storage.SPLIT_ON_LIMIT);
 
-		form.searchForURLsFileCheckBox.setSelected(SEARCH_URLS);
+		form.searchForURLsFileCheckBox.setSelected(storage.SEARCH_URLS);
 
-		form.maxLengthTextField.setText(String.valueOf(LINE_MAX_LENGTH));
-		form.maxLengthTextField.setEnabled(LIMIT_LINE_LENGTH);
-		form.maxLengthTextField.setEditable(LIMIT_LINE_LENGTH);
+		form.maxLengthTextField.setText(String.valueOf(storage.LINE_MAX_LENGTH));
+		form.maxLengthTextField.setEnabled(storage.LIMIT_LINE_LENGTH);
+		form.maxLengthTextField.setEditable(storage.LIMIT_LINE_LENGTH);
 	}
 
 	private void showErrorDialog() {
@@ -99,10 +79,10 @@ public class AwesomeConsoleConfig implements PersistentStateComponent<AwesomeCon
 		} catch (final NumberFormatException nfe) {
 			return true;
 		}
-		return form.limitLineMatchingByCheckBox.isSelected() != LIMIT_LINE_LENGTH
-				|| len != LINE_MAX_LENGTH
-				|| form.matchLinesLongerThanCheckBox.isSelected() != SPLIT_ON_LIMIT
-				|| form.searchForURLsFileCheckBox.isSelected() != SEARCH_URLS;
+		return form.limitLineMatchingByCheckBox.isSelected() != storage.LIMIT_LINE_LENGTH
+				|| len != storage.LINE_MAX_LENGTH
+				|| form.matchLinesLongerThanCheckBox.isSelected() != storage.SPLIT_ON_LIMIT
+				|| form.searchForURLsFileCheckBox.isSelected() != storage.SEARCH_URLS;
 	}
 
 	@Override
@@ -123,11 +103,11 @@ public class AwesomeConsoleConfig implements PersistentStateComponent<AwesomeCon
 			showErrorDialog();
 			return;
 		}
-		LIMIT_LINE_LENGTH = form.limitLineMatchingByCheckBox.isSelected();
-		LINE_MAX_LENGTH = maxLength;
-		SPLIT_ON_LIMIT = form.matchLinesLongerThanCheckBox.isSelected();
-		SEARCH_URLS = form.searchForURLsFileCheckBox.isSelected();
-		loadState(this);
+
+		storage.LIMIT_LINE_LENGTH = form.limitLineMatchingByCheckBox.isSelected();
+		storage.LINE_MAX_LENGTH = maxLength;
+		storage.SPLIT_ON_LIMIT = form.matchLinesLongerThanCheckBox.isSelected();
+		storage.SEARCH_URLS = form.searchForURLsFileCheckBox.isSelected();
 	}
 
 	@Override
