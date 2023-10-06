@@ -79,11 +79,14 @@ public class IntegrationTest {
 		System.out.println("    \"src/test/  resources/subdir/file1.java\" ");
 		System.out.println("    \"src/test/resources/subdir/ file1.java\" ");
 		System.out.println("    \"src/test/resources/subdir /file1.java\" ");
+
 		System.out.println("Comma or semicolon separated paths: C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java");
 		System.out.println("Comma or semicolon separated paths: C:\\integration\\file1.java:20:1,C:\\integration\\file2.java:20:2;C:\\integration\\file3.java:20:3");
 		System.out.println("Comma or semicolon separated paths: /tmp/file1.java,/tmp/file2.java;/tmp/file3.java");
 		System.out.println("Comma or semicolon separated paths: /tmp/file1.java:20:1,/tmp/file2.java:20:2;/tmp/file3.java:20:3");
 		System.out.println("Comma or semicolon separated paths(TODO): src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile");
 		System.out.println("Comma or semicolon separated paths: src/test/resources/file1.java:20:1,src/test/resources/file1.java:20:2;src/test/resources/file1.java:20:3");
+
+		System.out.println("Java stackTrace: at awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory(AwesomeLinkFilterTest.java:14)");
 	}
 }

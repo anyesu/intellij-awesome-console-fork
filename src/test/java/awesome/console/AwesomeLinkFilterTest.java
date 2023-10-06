@@ -216,6 +216,21 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	@Test
+	public void testJavaStacktrace() {
+		assertPathDetection("at Build_gradle.<init>(build.gradle.kts:9)", "build.gradle.kts:9", 9);
+		assertPathDetection(
+				"at awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory(AwesomeLinkFilterTest.java:14)",
+				"awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory",
+				"AwesomeLinkFilterTest.java:14"
+		);
+		assertPathDetection(
+				"at redis.clients.jedis.util.Pool.getResource(Pool.java:59) ~[jedis-3.0.0.jar:?]",
+				"redis.clients.jedis.util.Pool.getResource",
+				"Pool.java:59"
+		);
+	}
+
+	@Test
 	public void testPathColonAtTheEnd() {
 		assertPathDetection("colon at the end: resources/file1.java:5:1:", "resources/file1.java:5:1", 5, 1);
 		assertPathDetection("colon at the end: C:\\integration\\file1.java:5:4:", "C:\\integration\\file1.java:5:4", 5, 4);

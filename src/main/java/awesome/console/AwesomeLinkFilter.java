@@ -53,7 +53,7 @@ public class AwesomeLinkFilter implements Filter {
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
-	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()\\]])", REGEX_CHAR);
+	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()\\]])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
@@ -77,6 +77,8 @@ public class AwesomeLinkFilter implements Filter {
 
 	public static final Pattern DRIVE_PATTERN = Pattern.compile(String.format("^(?<drive>%s)", REGEX_DRIVE));
 
+	public static final Pattern STACK_TRACE_ELEMENT_PATTERN = Pattern.compile("^[\\w|\\s]*at\\s+(.+)\\.(.+)\\((.+\\.(java|kts?)):(\\d+)\\)");
+
 	private static final int maxSearchDepth = 1;
 
 	private final AwesomeConsoleConfig config;
@@ -87,6 +89,7 @@ public class AwesomeLinkFilter implements Filter {
 	private final ThreadLocal<Matcher> fileMatcher = ThreadLocal.withInitial(() -> FILE_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> urlMatcher = ThreadLocal.withInitial(() -> URL_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> driveMatcher = ThreadLocal.withInitial(() -> DRIVE_PATTERN.matcher(""));
+	private final ThreadLocal<Matcher> stackTraceElementMatcher = ThreadLocal.withInitial(() -> STACK_TRACE_ELEMENT_PATTERN.matcher(""));
 	private final ProjectRootManager projectRootManager;
 
 	private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
@@ -108,7 +111,11 @@ public class AwesomeLinkFilter implements Filter {
 
 	@Nullable
 	@Override
-	public Result applyFilter(final String line, final int endPoint) {
+	public Result applyFilter(@NotNull final String line, final int endPoint) {
+		if (!shouldFilter(line)) {
+			return null;
+		}
+
 		final List<ResultItem> results = new ArrayList<>();
 		final int startPoint = endPoint - line.length();
 		final List<String> chunks = splitLine(line);
@@ -123,6 +130,15 @@ public class AwesomeLinkFilter implements Filter {
 		}
 
 		return new Result(results);
+	}
+
+	private boolean shouldFilter(@NotNull final String line) {
+		final Matcher stackTraceElementMatcher = this.stackTraceElementMatcher.get();
+		if (stackTraceElementMatcher.reset(line).find()) {
+			// Ignore handling java stackTrace as ExceptionFilter does well
+			return false;
+		}
+		return true;
 	}
 
 	/**
