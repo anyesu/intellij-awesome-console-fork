@@ -88,5 +88,16 @@ public class IntegrationTest {
 		System.out.println("Comma or semicolon separated paths: src/test/resources/file1.java:20:1,src/test/resources/file1.java:20:2;src/test/resources/file1.java:20:3");
 
 		System.out.println("Java stackTrace: at awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory(AwesomeLinkFilterTest.java:14)");
+
+		for (final String pair : new String[]{"()", "[]"}) {
+			final String start = String.valueOf(pair.charAt(0));
+			final String end = String.valueOf(pair.charAt(1));
+
+			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:4" + end);
+			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:4:" + end);
+			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:4");
+			System.out.println("Path surrounded by: " + "awesome.console.IntegrationTest:4" + end);
+			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:4,awesome.console.IntegrationTest:5" + end);
+		}
 	}
 }

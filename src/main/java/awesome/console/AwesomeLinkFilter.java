@@ -453,9 +453,17 @@ public class AwesomeLinkFilter implements Filter {
 		return false;
 	}
 
-	private boolean isSurroundedBy(@NotNull final String s, @NotNull final String[] pairs) {
+	private boolean isSurroundedBy(@NotNull final String s, @NotNull final String[] pairs, int[] offsets) {
 		for (final String pair : pairs) {
-			if (s.startsWith(String.valueOf(pair.charAt(0))) && s.endsWith(String.valueOf(pair.charAt(1)))) {
+			final String start = String.valueOf(pair.charAt(0));
+			final String end = String.valueOf(pair.charAt(1));
+			if (s.startsWith(start)) {
+				offsets[0] = 1;
+				offsets[1] = s.endsWith(end) ? 1 : 0;
+				return true;
+			} else if (s.endsWith(end) && !s.contains(start)) {
+				offsets[0] = 0;
+				offsets[1] = 1;
 				return true;
 			}
 		}
@@ -505,15 +513,14 @@ public class AwesomeLinkFilter implements Filter {
 			final int row = IntegerUtil.parseInt(fileMatcher.group("row")).orElse(0);
 			final int col = IntegerUtil.parseInt(fileMatcher.group("col")).orElse(0);
 			match = decodeDwc(match);
-			int offset = 0;
-			if (isSurroundedBy(match, new String[]{"()", "[]"})) {
-				match = match.substring(1, match.length() - 1);
-				offset = 1;
+			int[] offsets = new int[]{0, 0};
+			if (isSurroundedBy(match, new String[]{"()", "[]"}, offsets)) {
+				match = match.substring(offsets[0], match.length() - offsets[1]);
 			}
 			results.add(new FileLinkMatch(
 					match, decodeDwc(path),
-					fileMatcher.start() + offset,
-					fileMatcher.end() - offset,
+					fileMatcher.start() + offsets[0],
+					fileMatcher.end() - offsets[1],
 					row, col
 			));
 		}

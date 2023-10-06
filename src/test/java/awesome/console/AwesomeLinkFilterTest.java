@@ -321,6 +321,24 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		);
 	}
 
+	@Test
+	public void testPathSurroundedBy() {
+		for (final String pair : new String[]{"()", "[]"}) {
+			final String start = String.valueOf(pair.charAt(0));
+			final String end = String.valueOf(pair.charAt(1));
+
+			assertPathDetection(start + "awesome.console.IntegrationTest:4" + end, "awesome.console.IntegrationTest:4", 4);
+			assertPathDetection(start + "awesome.console.IntegrationTest:4:" + end, "awesome.console.IntegrationTest:4", 4);
+			assertPathDetection(start + "awesome.console.IntegrationTest:4", "awesome.console.IntegrationTest:4", 4);
+			assertPathDetection("awesome.console.IntegrationTest:4" + end, "awesome.console.IntegrationTest:4", 4);
+			assertPathDetection(
+					start + "awesome.console.IntegrationTest:4,awesome.console.IntegrationTest:5" + end,
+					"awesome.console.IntegrationTest:4",
+					"awesome.console.IntegrationTest:5"
+			);
+		}
+	}
+
 	private void assertPathDetection(final String line, final String expected, final String... more) {
 		assertPathDetection(line, expected, -1, -1);
 		for (String item : more) {
