@@ -14,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.VisualPosition;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,6 +27,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent;
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent;
 import com.intellij.util.PathUtil;
+import com.intellij.util.messages.MessageBusConnection;
 import java.io.IOException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jetbrains.annotations.NotNull;
@@ -102,10 +104,15 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	private final ReentrantReadWriteLock.WriteLock cacheWriteLock = cacheLock.writeLock();
 
+	private final AwesomeProjectFilesIterator indexIterator;
+
+	private volatile boolean cacheInitialized = false;
+
 	public AwesomeLinkFilter(final Project project) {
 		this.project = project;
 		this.fileCache = new ConcurrentHashMap<>();
 		this.fileBaseCache = new ConcurrentHashMap<>();
+		this.indexIterator = new AwesomeProjectFilesIterator(fileCache, fileBaseCache);
 		projectRootManager = ProjectRootManager.getInstance(project);
 		srcRoots = getSourceRoots();
 		config = AwesomeConsoleStorage.getInstance();
@@ -366,18 +373,45 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				.collect(Collectors.toList());
 	}
 
-	private void createFileCache() {
-		AwesomeProjectFilesIterator iterator = new AwesomeProjectFilesIterator(fileCache, fileBaseCache);
-		projectRootManager.getFileIndex().iterateContent(iterator);
+	private void reloadFileCache() {
+		cacheWriteLock.lock();
+		try {
+			fileCache.clear();
+			fileBaseCache.clear();
+			projectRootManager.getFileIndex().iterateContent(indexIterator);
+			String state = cacheInitialized ? "reload" : "init";
+			if (!cacheInitialized) {
+				cacheInitialized = true;
+			}
+			logger.info(String.format(
+					"project[%s]: %s file cache: fileCache[%d], fileBaseCache[%d]",
+					project.getName(), state, fileCache.size(), fileBaseCache.size()
+			));
+		} finally {
+			cacheWriteLock.unlock();
+		}
+	}
 
-		logger.info(String.format("project[%s]: init file cache", project.getName()));
+	private void createFileCache() {
+		reloadFileCache();
+
+		MessageBusConnection connection = project.getMessageBus().connect();
+
+		// DumbService.smartInvokeLater() is executed only once,
+		// but exitDumbMode will be executed every time the mode changes.
+		connection.subscribe(DumbService.DUMB_MODE, new DumbService.DumbModeListener() {
+			@Override
+			public void exitDumbMode() {
+				reloadFileCache();
+			}
+		});
 
 		// VFS listeners are application level and will receive events for changes happening in
 		// all the projects opened by the user. You may need to filter out events that aren't
 		// relevant to your task (e.g., via ProjectFileIndex.isInContent()).
 		// ref: https://plugins.jetbrains.com/docs/intellij/virtual-file-system.html#virtual-file-system-events
 		// ref: https://plugins.jetbrains.com/docs/intellij/virtual-file.html#how-do-i-get-notified-when-vfs-changes
-		project.getMessageBus().connect().subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
+		connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
 			@Override
 			public void after(@NotNull List<? extends @NotNull VFileEvent> events) {
 				List<VirtualFile> newFiles = new ArrayList<>();
@@ -419,7 +453,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 						fileCache.forEach((key, value) -> value.removeIf(it -> !it.isValid() || !key.equals(it.getName())));
 						fileBaseCache.forEach((key, value) -> value.removeIf(it -> !it.isValid() || !key.equals(it.getNameWithoutExtension())));
 					}
-					newFiles.forEach(iterator::processFile);
+					newFiles.forEach(indexIterator::processFile);
 					logger.info(String.format("project[%s]: flush file cache", project.getName()));
 				} finally {
 					cacheWriteLock.unlock();
