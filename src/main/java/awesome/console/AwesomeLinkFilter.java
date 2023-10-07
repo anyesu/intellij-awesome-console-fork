@@ -13,6 +13,7 @@ import com.intellij.ide.browsers.OpenUrlHyperlinkInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.VisualPosition;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -37,7 +38,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class AwesomeLinkFilter implements Filter {
+/**
+ * allow Filter to run in dumb mode (when indices are in background update)
+ */
+public class AwesomeLinkFilter implements Filter, DumbAware {
 	private static final Logger logger = Logger.getInstance(AwesomeLinkFilter.class);
 
 	// JediTerm Unicode private use area U+100000–U+10FFFD
