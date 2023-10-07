@@ -92,5 +92,6 @@
 		<consoleFilterProvider implementation="awesome.console.AwesomeLinkFilterProvider" order="first"/>
 		<applicationConfigurable displayName="Awesome Console" id="awesome.console.config.AwesomeConsoleConfig" instance="awesome.console.config.AwesomeConsoleConfig"/>
 		<applicationService serviceImplementation="awesome.console.config.AwesomeConsoleStorage"/>
+		<notificationGroup displayType="NONE" id="Awesome Console"/>
 	</extensions>
 </idea-plugin>

@@ -5,11 +5,13 @@ import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import awesome.console.util.FileUtils;
 import awesome.console.util.IntegerUtil;
+import awesome.console.util.Notifier;
 import awesome.console.util.SystemUtils;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.HyperlinkInfoFactory;
 import com.intellij.ide.browsers.OpenUrlHyperlinkInfo;
+import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.VisualPosition;
@@ -373,19 +375,30 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				.collect(Collectors.toList());
 	}
 
-	private void reloadFileCache() {
+	private void notifyUser(String title, String message) {
+		Notifier.notify(
+				project, title, message,
+				NotificationAction.createSimple("Reload file cache", () -> reloadFileCache("manual"))
+		);
+	}
+
+	private void reloadFileCache(String reason) {
 		cacheWriteLock.lock();
 		try {
 			fileCache.clear();
 			fileBaseCache.clear();
 			projectRootManager.getFileIndex().iterateContent(indexIterator);
 			String state = cacheInitialized ? "reload" : "init";
+			notifyUser(
+					String.format("%s file cache ( %s )", state, reason),
+					String.format("fileCache[%d], fileBaseCache[%d]", fileCache.size(), fileBaseCache.size())
+			);
 			if (!cacheInitialized) {
 				cacheInitialized = true;
 			}
 			logger.info(String.format(
-					"project[%s]: %s file cache: fileCache[%d], fileBaseCache[%d]",
-					project.getName(), state, fileCache.size(), fileBaseCache.size()
+					"project[%s]: %s file cache ( %s ): fileCache[%d], fileBaseCache[%d]",
+					project.getName(), state, reason, fileCache.size(), fileBaseCache.size()
 			));
 		} finally {
 			cacheWriteLock.unlock();
@@ -393,7 +406,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	}
 
 	private void createFileCache() {
-		reloadFileCache();
+		reloadFileCache("open project");
 
 		MessageBusConnection connection = project.getMessageBus().connect();
 
@@ -402,7 +415,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		connection.subscribe(DumbService.DUMB_MODE, new DumbService.DumbModeListener() {
 			@Override
 			public void exitDumbMode() {
-				reloadFileCache();
+				reloadFileCache("indices are updated");
 			}
 		});
 
