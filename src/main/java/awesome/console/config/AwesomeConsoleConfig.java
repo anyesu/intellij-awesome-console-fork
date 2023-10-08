@@ -1,6 +1,8 @@
 package awesome.console.config;
 
 import com.intellij.openapi.options.Configurable;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,10 +42,16 @@ public class AwesomeConsoleConfig implements Configurable {
 		form.maxLengthTextField.setText(String.valueOf(storage.LINE_MAX_LENGTH));
 		form.maxLengthTextField.setEnabled(storage.LIMIT_LINE_LENGTH);
 		form.maxLengthTextField.setEditable(storage.LIMIT_LINE_LENGTH);
+
+		form.initIgnorePattern(storage.isUseIgnorePattern(), storage.getIgnorePatternText());
 	}
 
 	private void showErrorDialog() {
 		JOptionPane.showMessageDialog(form.mainpanel, "Error: Please enter a positive number.", "Invalid value", JOptionPane.ERROR_MESSAGE);
+	}
+
+	private void showErrorDialog(String title, String message) {
+		JOptionPane.showMessageDialog(form.mainpanel, message, title, JOptionPane.ERROR_MESSAGE);
 	}
 
 	/**
@@ -85,7 +93,9 @@ public class AwesomeConsoleConfig implements Configurable {
 				|| form.limitLineMatchingByCheckBox.isSelected() != storage.LIMIT_LINE_LENGTH
 				|| len != storage.LINE_MAX_LENGTH
 				|| form.matchLinesLongerThanCheckBox.isSelected() != storage.SPLIT_ON_LIMIT
-				|| form.searchForURLsFileCheckBox.isSelected() != storage.SEARCH_URLS;
+				|| form.searchForURLsFileCheckBox.isSelected() != storage.SEARCH_URLS
+				|| form.ignorePatternCheckBox.isSelected() != storage.isUseIgnorePattern()
+				|| !form.ignorePatternTextField.getText().trim().equals(storage.getIgnorePatternText());
 	}
 
 	@Override
@@ -107,11 +117,30 @@ public class AwesomeConsoleConfig implements Configurable {
 			return;
 		}
 
+		final boolean useIgnorePattern = form.ignorePatternCheckBox.isSelected();
+		final String ignorePatternText = form.ignorePatternTextField.getText().trim();
+		boolean invalid = ignorePatternText.isEmpty();
+		if (!invalid) {
+			try {
+				Pattern.compile(ignorePatternText);
+			} catch (PatternSyntaxException e) {
+				invalid = true;
+			}
+		}
+		if (invalid) {
+			showErrorDialog("Invalid value", "Invalid pattern: " + ignorePatternText);
+			return;
+		}
+
 		storage.DEBUG_MODE = form.debugModeCheckBox.isSelected();
 		storage.LIMIT_LINE_LENGTH = form.limitLineMatchingByCheckBox.isSelected();
 		storage.LINE_MAX_LENGTH = maxLength;
 		storage.SPLIT_ON_LIMIT = form.matchLinesLongerThanCheckBox.isSelected();
 		storage.SEARCH_URLS = form.searchForURLsFileCheckBox.isSelected();
+
+		storage.setUseIgnorePattern(useIgnorePattern);
+		storage.setIgnorePatternText(ignorePatternText);
+		form.ignorePatternTextField.setText(ignorePatternText);
 	}
 
 	@Override

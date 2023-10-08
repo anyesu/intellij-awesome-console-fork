@@ -13,6 +13,8 @@ public class AwesomeConsoleConfigForm {
 	private static final boolean DEFAULT_LIMIT_LINE_LENGTH = true;
 	private static final int DEFAULT_LINE_MAX_LENGTH = 1024;
 	private static final boolean DEFAULT_SEARCH_URLS = true;
+	public static final boolean DEFAULT_USE_IGNORE_PATTERN = true;
+	public static final String DEFAULT_IGNORE_PATTERN_TEXT = "^[.\\\\/]+$";
 
 	public JPanel mainpanel;
 	public JCheckBox debugModeCheckBox;
@@ -20,12 +22,15 @@ public class AwesomeConsoleConfigForm {
 	public JFormattedTextField maxLengthTextField;
 	public JCheckBox matchLinesLongerThanCheckBox;
 	public JCheckBox searchForURLsFileCheckBox;
+	public JCheckBox ignorePatternCheckBox;
+	public JTextField ignorePatternTextField;
 
 	private void createUIComponents() {
 		setupDebugMode();
 		setupLineLimit();
 		setupSplitLineIntoChunk();
 		setupMatchURLs();
+		setupIgnorePattern();
 	}
 
 	private void setupRestore(JComponent component, ActionListener listener) {
@@ -109,5 +114,24 @@ public class AwesomeConsoleConfigForm {
 				searchForURLsFileCheckBox.setSelected(DEFAULT_SEARCH_URLS);
 			}
 		});
+	}
+
+	private void setupIgnorePattern() {
+		ignorePatternCheckBox = new JCheckBox();
+		ignorePatternCheckBox.addActionListener(e -> {
+			final boolean enabled = ignorePatternCheckBox.isSelected();
+			ignorePatternTextField.setEnabled(enabled);
+			ignorePatternTextField.setEditable(enabled);
+		});
+
+		ignorePatternTextField = new JTextField();
+		setupRestore(ignorePatternTextField, e -> initIgnorePattern(DEFAULT_USE_IGNORE_PATTERN, DEFAULT_IGNORE_PATTERN_TEXT));
+	}
+
+	public void initIgnorePattern(boolean enabled, String text) {
+		ignorePatternCheckBox.setSelected(enabled);
+		ignorePatternTextField.setText(text);
+		ignorePatternTextField.setEnabled(enabled);
+		ignorePatternTextField.setEditable(enabled);
 	}
 }

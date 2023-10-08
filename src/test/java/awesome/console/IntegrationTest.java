@@ -99,5 +99,7 @@ public class IntegrationTest {
 			System.out.println("Path surrounded by: " + "awesome.console.IntegrationTest:4" + end);
 			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:4,awesome.console.IntegrationTest:5" + end);
 		}
+
+		System.out.println("Ignore matches: ./ . .. ... ./ ../ ././../. / // /// \\ \\\\ \\\\\\");
 	}
 }

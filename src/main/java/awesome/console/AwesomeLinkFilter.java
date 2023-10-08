@@ -186,6 +186,10 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		final List<URLLinkMatch> matches = detectURLs(line);
 
 		for (final URLLinkMatch match : matches) {
+			if (shouldIgnore(match.match)) {
+				continue;
+			}
+
 			final String file = getFileFromUrl(match.match);
 
 			if (null != file && !FileUtils.quickExists(file)) {
@@ -250,6 +254,10 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		final List<FileLinkMatch> matches = detectPaths(line);
 
 		for(final FileLinkMatch match: matches) {
+			if (shouldIgnore(match.match)) {
+				continue;
+			}
+
 			File file = resolveFile(match.path);
 			if (null != file && (isExternal(file) || file.isDirectory())) {
 				if (FileUtils.quickExists(file.getAbsolutePath())) {
@@ -539,11 +547,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				continue;
 			}
 
-			if ("/".equals(path) || "\\".equals(path)) {
-				// ignore the root directory as it matches a lot
-				continue;
-			}
-
 			String protocol = fileMatcher.group("protocol1");
 			if (null == protocol) {
 				protocol = fileMatcher.group("protocol2");
@@ -612,5 +615,9 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			results.add(new URLLinkMatch(match, urlMatcher.start() + startOffset, urlMatcher.end() - endOffset));
 		}
 		return results;
+	}
+
+	private boolean shouldIgnore(@NotNull final String match) {
+		return config.isUseIgnorePattern() && config.getIgnoreMatcher().reset(match).find();
 	}
 }

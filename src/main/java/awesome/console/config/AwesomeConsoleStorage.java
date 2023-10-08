@@ -6,6 +6,12 @@ import com.intellij.openapi.components.RoamingType;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,6 +25,13 @@ import org.jetbrains.annotations.NotNull;
 )
 public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeConsoleStorage> {
 
+    public static final Matcher DEFAULT_IGNORE_MATCHER = Pattern.compile(
+            AwesomeConsoleConfigForm.DEFAULT_IGNORE_PATTERN_TEXT,
+            Pattern.UNICODE_CHARACTER_CLASS
+    ).matcher("");
+
+    private final Map<Thread, Matcher> ignoreMatcherCache = new ConcurrentHashMap<>();
+
     public boolean DEBUG_MODE = AwesomeConsoleConfigForm.DEFAULT_DEBUG_MODE;
 
     public boolean SPLIT_ON_LIMIT = false;
@@ -28,6 +41,10 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     public int LINE_MAX_LENGTH = 1024;
 
     public boolean SEARCH_URLS = true;
+
+    private volatile boolean useIgnorePattern = AwesomeConsoleConfigForm.DEFAULT_USE_IGNORE_PATTERN;
+
+    private volatile String ignorePatternText = AwesomeConsoleConfigForm.DEFAULT_IGNORE_PATTERN_TEXT;
 
     /**
      * Helpers
@@ -45,5 +62,35 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     @Override
     public void loadState(@NotNull AwesomeConsoleStorage state) {
         XmlSerializerUtil.copyBean(state, this);
+    }
+
+    public boolean isUseIgnorePattern() {
+        return useIgnorePattern;
+    }
+
+    public void setUseIgnorePattern(boolean useIgnorePattern) {
+        this.useIgnorePattern = useIgnorePattern;
+    }
+
+    public String getIgnorePatternText() {
+        return ignorePatternText;
+    }
+
+    public void setIgnorePatternText(String ignorePatternText) {
+        if (!Objects.equals(this.ignorePatternText, ignorePatternText)) {
+            ignoreMatcherCache.clear();
+        }
+        this.ignorePatternText = ignorePatternText;
+    }
+
+    @NotNull
+    public Matcher getIgnoreMatcher() {
+        return ignoreMatcherCache.computeIfAbsent(Thread.currentThread(), (key) -> {
+            try {
+                return Pattern.compile(ignorePatternText, Pattern.UNICODE_CHARACTER_CLASS).matcher("");
+            } catch (PatternSyntaxException e) {
+                return DEFAULT_IGNORE_MATCHER;
+            }
+        });
     }
 }
