@@ -389,10 +389,12 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			fileBaseCache.clear();
 			projectRootManager.getFileIndex().iterateContent(indexIterator);
 			String state = cacheInitialized ? "reload" : "init";
-			notifyUser(
-					String.format("%s file cache ( %s )", state, reason),
-					String.format("fileCache[%d], fileBaseCache[%d]", fileCache.size(), fileBaseCache.size())
-			);
+			if (!cacheInitialized || config.DEBUG_MODE) {
+				notifyUser(
+						String.format("%s file cache ( %s )", state, reason),
+						String.format("fileCache[%d], fileBaseCache[%d]", fileCache.size(), fileBaseCache.size())
+				);
+			}
 			if (!cacheInitialized) {
 				cacheInitialized = true;
 			}

@@ -8,21 +8,39 @@ import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 
 public class AwesomeConsoleConfigForm {
+	public static final boolean DEFAULT_DEBUG_MODE = false;
 	private static final boolean DEFAULT_SPLIT_ON_LIMIT = false;
 	private static final boolean DEFAULT_LIMIT_LINE_LENGTH = true;
 	private static final int DEFAULT_LINE_MAX_LENGTH = 1024;
 	private static final boolean DEFAULT_SEARCH_URLS = true;
 
 	public JPanel mainpanel;
+	public JCheckBox debugModeCheckBox;
 	public JCheckBox limitLineMatchingByCheckBox;
 	public JFormattedTextField maxLengthTextField;
 	public JCheckBox matchLinesLongerThanCheckBox;
 	public JCheckBox searchForURLsFileCheckBox;
 
 	private void createUIComponents() {
+		setupDebugMode();
 		setupLineLimit();
 		setupSplitLineIntoChunk();
 		setupMatchURLs();
+	}
+
+	private void setupRestore(JComponent component, ActionListener listener) {
+		final JPopupMenu popup = new JPopupMenu("Defaults");
+		
+		final JMenuItem item = popup.add("Restore defaults");
+		item.setMnemonic(KeyEvent.VK_R);
+		item.addActionListener(listener);
+
+		component.setComponentPopupMenu(popup);
+	}
+
+	private void setupDebugMode() {
+		debugModeCheckBox = new JCheckBox("debugModeCheckBox");
+		setupRestore(debugModeCheckBox, e -> debugModeCheckBox.setSelected(DEFAULT_DEBUG_MODE));
 	}
 
 	private void setupLineLimit() {

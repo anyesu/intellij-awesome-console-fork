@@ -19,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 )
 public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeConsoleStorage> {
 
+    public boolean DEBUG_MODE = AwesomeConsoleConfigForm.DEFAULT_DEBUG_MODE;
+
     public boolean SPLIT_ON_LIMIT = false;
 
     public boolean LIMIT_LINE_LENGTH = true;

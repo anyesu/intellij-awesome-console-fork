@@ -28,6 +28,8 @@ public class AwesomeConsoleConfig implements Configurable {
 	}
 
 	private void initFromConfig() {
+		form.debugModeCheckBox.setSelected(storage.DEBUG_MODE);
+
 		form.limitLineMatchingByCheckBox.setSelected(storage.LIMIT_LINE_LENGTH);
 
 		form.matchLinesLongerThanCheckBox.setEnabled(storage.LIMIT_LINE_LENGTH);
@@ -79,7 +81,8 @@ public class AwesomeConsoleConfig implements Configurable {
 		} catch (final NumberFormatException nfe) {
 			return true;
 		}
-		return form.limitLineMatchingByCheckBox.isSelected() != storage.LIMIT_LINE_LENGTH
+		return form.debugModeCheckBox.isSelected() != storage.DEBUG_MODE
+				|| form.limitLineMatchingByCheckBox.isSelected() != storage.LIMIT_LINE_LENGTH
 				|| len != storage.LINE_MAX_LENGTH
 				|| form.matchLinesLongerThanCheckBox.isSelected() != storage.SPLIT_ON_LIMIT
 				|| form.searchForURLsFileCheckBox.isSelected() != storage.SEARCH_URLS;
@@ -104,6 +107,7 @@ public class AwesomeConsoleConfig implements Configurable {
 			return;
 		}
 
+		storage.DEBUG_MODE = form.debugModeCheckBox.isSelected();
 		storage.LIMIT_LINE_LENGTH = form.limitLineMatchingByCheckBox.isSelected();
 		storage.LINE_MAX_LENGTH = maxLength;
 		storage.SPLIT_ON_LIMIT = form.matchLinesLongerThanCheckBox.isSelected();
