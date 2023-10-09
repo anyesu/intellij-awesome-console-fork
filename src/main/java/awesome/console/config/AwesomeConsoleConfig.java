@@ -1,8 +1,7 @@
 package awesome.console.config;
 
+import awesome.console.util.RegexUtils;
 import com.intellij.openapi.options.Configurable;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,15 +118,7 @@ public class AwesomeConsoleConfig implements Configurable {
 
 		final boolean useIgnorePattern = form.ignorePatternCheckBox.isSelected();
 		final String ignorePatternText = form.ignorePatternTextField.getText().trim();
-		boolean invalid = ignorePatternText.isEmpty();
-		if (!invalid) {
-			try {
-				Pattern.compile(ignorePatternText);
-			} catch (PatternSyntaxException e) {
-				invalid = true;
-			}
-		}
-		if (invalid) {
+		if (ignorePatternText.isEmpty() || !RegexUtils.isValidRegex(ignorePatternText)) {
 			showErrorDialog("Invalid value", "Invalid pattern: " + ignorePatternText);
 			return;
 		}

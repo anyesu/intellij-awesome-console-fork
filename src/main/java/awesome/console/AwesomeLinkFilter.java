@@ -6,6 +6,7 @@ import awesome.console.match.URLLinkMatch;
 import awesome.console.util.FileUtils;
 import awesome.console.util.IntegerUtil;
 import awesome.console.util.Notifier;
+import awesome.console.util.RegexUtils;
 import awesome.console.util.SystemUtils;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
@@ -553,19 +554,13 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		final List<FileLinkMatch> results = new LinkedList<>();
 		while (fileMatcher.find()) {
 			String match = fileMatcher.group("link");
-			String path = fileMatcher.group("spacePath");
-			if (null == path) {
-				path = fileMatcher.group("path");
-			}
+			String path = RegexUtils.matchGroup(fileMatcher, "spacePath", "path");
 			if (null == path) {
 				logger.error("Regex group 'path' was NULL while trying to match path line: " + line + "\nfor match: " + match);
 				continue;
 			}
 
-			String protocol = fileMatcher.group("protocol1");
-			if (null == protocol) {
-				protocol = fileMatcher.group("protocol2");
-			}
+			final String protocol = RegexUtils.matchGroup(fileMatcher, "protocol1", "protocol2");
 			if ("file://".equalsIgnoreCase(protocol)) {
 				match = match.replace(protocol, "");
 				path = path.substring(protocol.length());
