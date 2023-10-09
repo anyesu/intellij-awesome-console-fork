@@ -323,7 +323,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testPathSurroundedBy() {
-		for (final String pair : new String[]{"()", "[]"}) {
+		for (final String pair : new String[]{"()", "[]", "''"}) {
 			final String start = String.valueOf(pair.charAt(0));
 			final String end = String.valueOf(pair.charAt(1));
 

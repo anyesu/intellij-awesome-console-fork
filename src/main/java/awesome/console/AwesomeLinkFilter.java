@@ -62,7 +62,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
-	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()\\]])", REGEX_CHAR);
+	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()\\]'])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
@@ -77,7 +77,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
-			String.format("(?![ ,;\\]])(?<link>[\\(\\[]?(?:%s|%s)%s[\\)\\]]?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
+			String.format("(?![ ,;\\]])(?<link>[\\(\\[']?(?:%s|%s)%s[)\\]']?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
@@ -531,6 +531,9 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	}
 
 	private boolean isSurroundedBy(@NotNull final String s, @NotNull final String[] pairs, int[] offsets) {
+		if (s.length() < 2) {
+			return false;
+		}
 		for (final String pair : pairs) {
 			final String start = String.valueOf(pair.charAt(0));
 			final String end = String.valueOf(pair.charAt(1));
@@ -538,7 +541,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				offsets[0] = 1;
 				offsets[1] = s.endsWith(end) ? 1 : 0;
 				return true;
-			} else if (s.endsWith(end) && !s.contains(start)) {
+			} else if (s.endsWith(end) && !s.substring(0, s.length() - 1).contains(start)) {
 				offsets[0] = 0;
 				offsets[1] = 1;
 				return true;
@@ -580,7 +583,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			final int col = IntegerUtil.parseInt(fileMatcher.group("col")).orElse(0);
 			match = decodeDwc(match);
 			int[] offsets = new int[]{0, 0};
-			if (isSurroundedBy(match, new String[]{"()", "[]"}, offsets)) {
+			if (isSurroundedBy(match, new String[]{"()", "[]", "''"}, offsets)) {
 				match = match.substring(offsets[0], match.length() - offsets[1]);
 			}
 			results.add(new FileLinkMatch(

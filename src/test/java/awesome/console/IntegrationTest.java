@@ -89,7 +89,7 @@ public class IntegrationTest {
 
 		System.out.println("Java stackTrace: at awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory(AwesomeLinkFilterTest.java:14)");
 
-		for (final String pair : new String[]{"()", "[]"}) {
+		for (final String pair : new String[]{"()", "[]", "''"}) {
 			final String start = String.valueOf(pair.charAt(0));
 			final String end = String.valueOf(pair.charAt(1));
 
