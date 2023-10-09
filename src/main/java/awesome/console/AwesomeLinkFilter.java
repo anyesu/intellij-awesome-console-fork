@@ -4,6 +4,7 @@ import awesome.console.config.AwesomeConsoleStorage;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import awesome.console.util.FileUtils;
+import awesome.console.util.HyperlinkUtils;
 import awesome.console.util.IntegerUtil;
 import awesome.console.util.Notifier;
 import awesome.console.util.RegexUtils;
@@ -275,18 +276,17 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			}
 
 			File file = resolveFile(match.path);
-			if (null != file && (isExternal(file) || file.isDirectory())) {
-				if (FileUtils.quickExists(file.getAbsolutePath())) {
-					results.add(
-							new Result(
-									startPoint + match.start,
-									startPoint + match.end,
-									new OpenUrlHyperlinkInfo(file.getAbsolutePath()))
-					);
+			if (null != file) {
+				final boolean isDirectory = file.isDirectory();
+				final String filePath = file.getAbsolutePath();
+				if (isDirectory || isExternal(file)) {
+					if (file.exists()) {
+						final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(project, filePath, match.linkedRow, match.linkedCol);
+						results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
+					}
+					continue;
 				}
-				continue;
-			} else if (null != file) {
-				match.path = file.getAbsolutePath();
+				match.path = filePath;
 			}
 
 			String path = PathUtil.getFileName(match.path);
