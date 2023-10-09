@@ -6,9 +6,8 @@ import com.intellij.openapi.components.RoamingType;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
-import java.util.Map;
+import com.intellij.util.xmlb.annotations.Transient;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -30,8 +29,6 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
             Pattern.UNICODE_CHARACTER_CLASS
     ).matcher("");
 
-    private final Map<Thread, Matcher> ignoreMatcherCache = new ConcurrentHashMap<>();
-
     public boolean DEBUG_MODE = AwesomeConsoleConfigForm.DEFAULT_DEBUG_MODE;
 
     public boolean SPLIT_ON_LIMIT = false;
@@ -41,6 +38,9 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     public int LINE_MAX_LENGTH = 1024;
 
     public boolean SEARCH_URLS = true;
+
+    @Transient
+    public volatile Matcher ignoreMatcher = DEFAULT_IGNORE_MATCHER;
 
     private volatile boolean useIgnorePattern = AwesomeConsoleConfigForm.DEFAULT_USE_IGNORE_PATTERN;
 
@@ -78,19 +78,12 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
 
     public void setIgnorePatternText(String ignorePatternText) {
         if (!Objects.equals(this.ignorePatternText, ignorePatternText)) {
-            ignoreMatcherCache.clear();
+            try {
+                ignoreMatcher = Pattern.compile(ignorePatternText, Pattern.UNICODE_CHARACTER_CLASS).matcher("");
+            } catch (PatternSyntaxException e) {
+                ignoreMatcher = DEFAULT_IGNORE_MATCHER;
+            }
         }
         this.ignorePatternText = ignorePatternText;
-    }
-
-    @NotNull
-    public Matcher getIgnoreMatcher() {
-        return ignoreMatcherCache.computeIfAbsent(Thread.currentThread(), (key) -> {
-            try {
-                return Pattern.compile(ignorePatternText, Pattern.UNICODE_CHARACTER_CLASS).matcher("");
-            } catch (PatternSyntaxException e) {
-                return DEFAULT_IGNORE_MATCHER;
-            }
-        });
     }
 }

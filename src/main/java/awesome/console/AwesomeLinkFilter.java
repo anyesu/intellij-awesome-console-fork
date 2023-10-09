@@ -98,6 +98,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	private final ThreadLocal<Matcher> urlMatcher = ThreadLocal.withInitial(() -> URL_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> driveMatcher = ThreadLocal.withInitial(() -> DRIVE_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> stackTraceElementMatcher = ThreadLocal.withInitial(() -> STACK_TRACE_ELEMENT_PATTERN.matcher(""));
+	private final ThreadLocal<Matcher> ignoreMatcher = new ThreadLocal<>();
 	private final ProjectRootManager projectRootManager;
 
 	private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
@@ -129,6 +130,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			return null;
 		}
 
+		prepareFilter();
+
 		final List<ResultItem> results = new ArrayList<>();
 		final int startPoint = endPoint - line.length();
 		final List<String> chunks = splitLine(line);
@@ -152,6 +155,18 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			return false;
 		}
 		return true;
+	}
+
+	private void prepareFilter() {
+		prepareIgnoreMatcher();
+	}
+
+	private void prepareIgnoreMatcher() {
+		final Matcher ignoreMatcher = this.ignoreMatcher.get();
+		final Matcher ignoreMatcherConfig = config.ignoreMatcher;
+		if (!Objects.equals(ignoreMatcher, ignoreMatcherConfig)) {
+			this.ignoreMatcher.set(ignoreMatcherConfig);
+		}
 	}
 
 	/**
@@ -618,6 +633,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	}
 
 	private boolean shouldIgnore(@NotNull final String match) {
-		return config.isUseIgnorePattern() && config.getIgnoreMatcher().reset(match).find();
+		final Matcher ignoreMatcher = this.ignoreMatcher.get();
+		return config.isUseIgnorePattern() && null != ignoreMatcher && ignoreMatcher.reset(match).find();
 	}
 }
