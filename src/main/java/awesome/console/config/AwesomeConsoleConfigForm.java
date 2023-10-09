@@ -7,15 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 
-public class AwesomeConsoleConfigForm {
-	public static final boolean DEFAULT_DEBUG_MODE = false;
-	private static final boolean DEFAULT_SPLIT_ON_LIMIT = false;
-	private static final boolean DEFAULT_LIMIT_LINE_LENGTH = true;
-	private static final int DEFAULT_LINE_MAX_LENGTH = 1024;
-	private static final boolean DEFAULT_SEARCH_URLS = true;
-	public static final boolean DEFAULT_USE_IGNORE_PATTERN = true;
-	public static final String DEFAULT_IGNORE_PATTERN_TEXT = "^[.\\\\/]+$";
-
+public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JPanel mainpanel;
 	public JCheckBox debugModeCheckBox;
 	public JCheckBox limitLineMatchingByCheckBox;

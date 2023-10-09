@@ -22,29 +22,29 @@ import org.jetbrains.annotations.NotNull;
                 @Storage(value = "awesomeconsole.xml", roamingType = RoamingType.DISABLED)
         }
 )
-public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeConsoleStorage> {
+public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeConsoleStorage>, AwesomeConsoleDefaults {
 
     public static final Matcher DEFAULT_IGNORE_MATCHER = Pattern.compile(
-            AwesomeConsoleConfigForm.DEFAULT_IGNORE_PATTERN_TEXT,
+            DEFAULT_IGNORE_PATTERN_TEXT,
             Pattern.UNICODE_CHARACTER_CLASS
     ).matcher("");
 
-    public boolean DEBUG_MODE = AwesomeConsoleConfigForm.DEFAULT_DEBUG_MODE;
+    public volatile boolean DEBUG_MODE = DEFAULT_DEBUG_MODE;
 
-    public boolean SPLIT_ON_LIMIT = false;
+    public volatile boolean SPLIT_ON_LIMIT = DEFAULT_SPLIT_ON_LIMIT;
 
-    public boolean LIMIT_LINE_LENGTH = true;
+    public volatile boolean LIMIT_LINE_LENGTH = DEFAULT_LIMIT_LINE_LENGTH;
 
-    public int LINE_MAX_LENGTH = 1024;
+    public volatile int LINE_MAX_LENGTH = DEFAULT_LINE_MAX_LENGTH;
 
-    public boolean SEARCH_URLS = true;
+    public volatile boolean SEARCH_URLS = DEFAULT_SEARCH_URLS;
 
     @Transient
     public volatile Matcher ignoreMatcher = DEFAULT_IGNORE_MATCHER;
 
-    private volatile boolean useIgnorePattern = AwesomeConsoleConfigForm.DEFAULT_USE_IGNORE_PATTERN;
+    private volatile boolean useIgnorePattern = DEFAULT_USE_IGNORE_PATTERN;
 
-    private volatile String ignorePatternText = AwesomeConsoleConfigForm.DEFAULT_IGNORE_PATTERN_TEXT;
+    private volatile String ignorePatternText = DEFAULT_IGNORE_PATTERN_TEXT;
 
     /**
      * Helpers
