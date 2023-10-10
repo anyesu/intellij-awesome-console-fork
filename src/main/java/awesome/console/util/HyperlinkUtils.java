@@ -1,12 +1,15 @@
 package awesome.console.util;
 
 import com.intellij.execution.filters.HyperlinkInfo;
+import com.intellij.execution.filters.HyperlinkInfoFactory;
 import com.intellij.execution.filters.LazyFileHyperlinkInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author anyesu
@@ -36,5 +39,19 @@ public class HyperlinkUtils {
                 super.navigate(project);
             }
         };
+    }
+
+    @NotNull
+    public static HyperlinkInfo createMultipleFilesHyperlinkInfo(@NotNull List<? extends VirtualFile> files,
+                                                                 int line, @NotNull Project project) {
+        return createMultipleFilesHyperlinkInfo(files, line, project, null);
+    }
+
+    @NotNull
+    public static HyperlinkInfo createMultipleFilesHyperlinkInfo(@NotNull List<? extends VirtualFile> files,
+                                                                 int line,
+                                                                 @NotNull Project project,
+                                                                 HyperlinkInfoFactory.@Nullable HyperlinkHandler action) {
+        return new MultipleFilesHyperlinkInfo(files, line, project, action);
     }
 }

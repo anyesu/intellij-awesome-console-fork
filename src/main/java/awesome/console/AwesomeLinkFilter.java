@@ -265,7 +265,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public List<ResultItem> getResultItemsFile(final String line, final int startPoint) {
 		final List<ResultItem> results = new ArrayList<>();
-		final HyperlinkInfoFactory hyperlinkInfoFactory = HyperlinkInfoFactory.getInstance();
 
 		final List<FileLinkMatch> matches = detectPaths(line);
 
@@ -316,7 +315,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			// ref: https://github.com/JetBrains/intellij-community/blob/212.5080/platform/platform-impl/src/com/intellij/ide/util/GotoLineNumberDialog.java#L53-L55
 			final int row = match.linkedRow <= 0 ? 0 : match.linkedRow - 1;
 			final int col = match.linkedCol <= 0 ? 0 : match.linkedCol - 1;
-			final HyperlinkInfo linkInfo = hyperlinkInfoFactory.createMultipleFilesHyperlinkInfo(
+			final HyperlinkInfo linkInfo = HyperlinkUtils.createMultipleFilesHyperlinkInfo(
 					matchingFiles,
 					row,
 					project,
