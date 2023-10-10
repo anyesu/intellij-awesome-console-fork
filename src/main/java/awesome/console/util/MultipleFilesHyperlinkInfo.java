@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * fix built-in MultipleFilesHyperlinkInfo
  * https://github.com/JetBrains/intellij-community/blob/212.5080/platform/lang-impl/src/com/intellij/execution/filters/impl/MultipleFilesHyperlinkInfo.java
  */
 public class MultipleFilesHyperlinkInfo extends HyperlinkInfoBase implements FileHyperlinkInfo {
@@ -121,7 +122,9 @@ public class MultipleFilesHyperlinkInfo extends HyperlinkInfoBase implements Fil
             if (hyperlinkLocationPoint != null) {
                 popup.show(hyperlinkLocationPoint);
             } else {
-                popup.showInFocusCenter();
+                // popup.myProject is null, so the popup is not show in the correct project
+                // popup.showInFocusCenter();
+                popup.showCenteredInCurrentWindow(project);
             }
         }
     }
