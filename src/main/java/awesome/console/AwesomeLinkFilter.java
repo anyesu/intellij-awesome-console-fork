@@ -95,7 +95,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	private final Map<String, List<VirtualFile>> fileCache;
 	private final Map<String, List<VirtualFile>> fileBaseCache;
 	private final Project project;
-	private final List<String> srcRoots;
+	private volatile List<String> srcRoots = Collections.emptyList();
 	private final ThreadLocal<Matcher> fileMatcher = ThreadLocal.withInitial(() -> FILE_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> urlMatcher = ThreadLocal.withInitial(() -> URL_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> driveMatcher = ThreadLocal.withInitial(() -> DRIVE_PATTERN.matcher(""));
@@ -119,7 +119,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		this.fileBaseCache = new ConcurrentHashMap<>();
 		this.indexIterator = new AwesomeProjectFilesIterator(fileCache, fileBaseCache);
 		projectRootManager = ProjectRootManager.getInstance(project);
-		srcRoots = getSourceRoots();
 		config = AwesomeConsoleStorage.getInstance();
 
 		createFileCache();
@@ -409,6 +408,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	private void reloadFileCache(String reason) {
 		cacheWriteLock.lock();
 		try {
+			srcRoots = getSourceRoots();
 			fileCache.clear();
 			fileBaseCache.clear();
 			projectRootManager.getFileIndex().iterateContent(indexIterator);
