@@ -16,13 +16,15 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JCheckBox searchForURLsFileCheckBox;
 	public JCheckBox ignorePatternCheckBox;
 	public JTextField ignorePatternTextField;
+	public JCheckBox fixChooseTargetFileCheckBox;
 
-	private void createUIComponents() {
+    private void createUIComponents() {
 		setupDebugMode();
 		setupLineLimit();
 		setupSplitLineIntoChunk();
 		setupMatchURLs();
 		setupIgnorePattern();
+		setupFixChooseTargetFileCheckBox();
 	}
 
 	private void setupRestore(JComponent component, ActionListener listener) {
@@ -125,5 +127,11 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		ignorePatternTextField.setText(text);
 		ignorePatternTextField.setEnabled(enabled);
 		ignorePatternTextField.setEditable(enabled);
+	}
+
+	private void setupFixChooseTargetFileCheckBox() {
+		fixChooseTargetFileCheckBox = new JCheckBox("fixChooseTargetFileCheckBox");
+		fixChooseTargetFileCheckBox.setToolTipText("Uncheck If this fix is not compatible with your newer version of IDE.");
+		setupRestore(fixChooseTargetFileCheckBox, e -> fixChooseTargetFileCheckBox.setSelected(DEFAULT_FIX_CHOOSE_TARGET_FILE));
 	}
 }

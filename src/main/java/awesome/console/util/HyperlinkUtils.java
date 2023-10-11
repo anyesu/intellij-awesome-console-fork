@@ -43,15 +43,19 @@ public class HyperlinkUtils {
 
     @NotNull
     public static HyperlinkInfo createMultipleFilesHyperlinkInfo(@NotNull List<? extends VirtualFile> files,
-                                                                 int line, @NotNull Project project) {
-        return createMultipleFilesHyperlinkInfo(files, line, project, null);
+                                                                 int line, @NotNull Project project, boolean useFix) {
+        return createMultipleFilesHyperlinkInfo(files, line, project, useFix, null);
     }
 
     @NotNull
     public static HyperlinkInfo createMultipleFilesHyperlinkInfo(@NotNull List<? extends VirtualFile> files,
                                                                  int line,
                                                                  @NotNull Project project,
+                                                                 boolean useFix,
                                                                  HyperlinkInfoFactory.@Nullable HyperlinkHandler action) {
-        return new MultipleFilesHyperlinkInfo(files, line, project, action);
+        if (useFix) {
+            return new MultipleFilesHyperlinkInfo(files, line, project, action);
+        }
+        return HyperlinkInfoFactory.getInstance().createMultipleFilesHyperlinkInfo(files, line, project, action);
     }
 }

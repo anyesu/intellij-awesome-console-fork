@@ -11,7 +11,6 @@ import awesome.console.util.RegexUtils;
 import awesome.console.util.SystemUtils;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
-import com.intellij.execution.filters.HyperlinkInfoFactory;
 import com.intellij.ide.browsers.OpenUrlHyperlinkInfo;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.diagnostic.Logger;
@@ -329,6 +328,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 					matchingFiles,
 					row,
 					project,
+					config.fixChooseTargetFile,
 					(project, psiFile, editor, originalEditor) -> editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(row, col))
 			);
 
