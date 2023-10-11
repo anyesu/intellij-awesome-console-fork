@@ -15,6 +15,8 @@ public class IntegrationTest {
 		System.out.println("Just a file with line num and col: file_with.special-chars.js:5:3");
 		System.out.println("Just a file with path: resources/file1.java");
 		System.out.println("Just a file with path: src/test/resources/file1.java");
+		System.out.println("Just a file with path: \\src/test/resources/file1.java");
+		System.out.println("Just a file with path: /src/test/resources/file1.java");
 		System.out.println("Just a file with path: ./src/test/resources/file1.java");
 		System.out.println("bla-bla at (AwesomeLinkFilter.java:150) something");
 		System.out.println("Absolute path: /tmp");

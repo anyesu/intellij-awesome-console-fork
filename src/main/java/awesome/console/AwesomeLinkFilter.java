@@ -276,13 +276,17 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			File file = resolveFile(match.path);
 			if (null != file) {
 				final boolean isDirectory = file.isDirectory();
-				final String filePath = file.getAbsolutePath();
+				String filePath = file.getAbsolutePath();
 				if (isDirectory || isExternal(file)) {
 					if (file.exists()) {
 						final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(project, filePath, match.linkedRow, match.linkedCol);
 						results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
 					}
-					continue;
+					if (!match.path.startsWith("/") && !match.path.startsWith("\\")) {
+						continue;
+					}
+					// Resolve absolute paths starting with a slash into relative paths based on the project root as a fallback
+					filePath = new File(project.getBasePath(), match.path).getAbsolutePath();
 				}
 				match.path = filePath;
 			}
