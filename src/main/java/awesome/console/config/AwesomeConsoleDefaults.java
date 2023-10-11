@@ -17,5 +17,5 @@ public interface AwesomeConsoleDefaults {
 
     boolean DEFAULT_USE_IGNORE_PATTERN = true;
 
-    String DEFAULT_IGNORE_PATTERN_TEXT = "^[.\\\\/]+$";
+    String DEFAULT_IGNORE_PATTERN_TEXT = "^(\"?)[.\\\\/]+\\1$|^node_modules/";
 }

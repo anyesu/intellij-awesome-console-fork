@@ -303,6 +303,12 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				if (null == matchingFiles) {
 					matchingFiles = getResultItemsFileFromBasename(path);
 				}
+				if (null != matchingFiles) {
+					// Don't use parallelStream because `shouldIgnore` uses ThreadLocal
+					matchingFiles = matchingFiles.stream()
+												 .filter(f -> !shouldIgnore(getRelativePath(f)))
+												 .collect(Collectors.toList());
+				}
 			} finally {
 				cacheReadLock.unlock();
 			}
@@ -334,6 +340,18 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		}
 
 		return results;
+	}
+
+	private String getRelativePath(@NotNull VirtualFile file) {
+		String path = file.getPath();
+		String basePath = project.getBasePath();
+		if (null == basePath) {
+			return path;
+		}
+		if (!basePath.endsWith("/")) {
+			basePath += "/";
+		}
+		return path.startsWith(basePath) ? path.substring(basePath.length()) : path;
 	}
 
 	private List<VirtualFile> findBestMatchingFiles(final FileLinkMatch match, final List<VirtualFile> matchingFiles) {
