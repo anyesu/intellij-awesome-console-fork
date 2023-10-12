@@ -274,20 +274,21 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 			File file = resolveFile(match.path);
 			if (null != file) {
-				final boolean isDirectory = file.isDirectory();
+				final boolean isExternal = isExternal(file);
+				final boolean exists = file.exists();
 				String filePath = file.getAbsolutePath();
-				if (isDirectory || isExternal(file)) {
-					if (file.exists()) {
-						final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(project, filePath, match.linkedRow, match.linkedCol);
-						results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
-					}
+				if (exists) {
+					final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(project, filePath, match.linkedRow, match.linkedCol);
+					results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
+					continue;
+				} else if (isExternal) {
 					if (!match.path.startsWith("/") && !match.path.startsWith("\\")) {
 						continue;
 					}
 					// Resolve absolute paths starting with a slash into relative paths based on the project root as a fallback
 					filePath = new File(project.getBasePath(), match.path).getAbsolutePath();
 				}
-				match.path = filePath;
+				match.path = getRelativePath(filePath);
 			}
 
 			String path = PathUtil.getFileName(match.path);
@@ -305,7 +306,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				if (null != matchingFiles) {
 					// Don't use parallelStream because `shouldIgnore` uses ThreadLocal
 					matchingFiles = matchingFiles.stream()
-												 .filter(f -> !shouldIgnore(getRelativePath(f)))
+												 .filter(f -> !shouldIgnore(getRelativePath(f.getPath())))
 												 .collect(Collectors.toList());
 				}
 			} finally {
@@ -342,8 +343,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		return results;
 	}
 
-	private String getRelativePath(@NotNull VirtualFile file) {
-		String path = file.getPath();
+	private String getRelativePath(@NotNull String path) {
+		path = generalizePath(path);
 		String basePath = project.getBasePath();
 		if (null == basePath) {
 			return path;

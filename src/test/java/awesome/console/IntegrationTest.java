@@ -103,5 +103,7 @@ public class IntegrationTest {
 		}
 
 		System.out.println("Ignore matches: ./ . .. ... ./ ../ ././../. / // /// \\ \\\\ \\\\\\");
+
+		System.out.println("Non-indexed files in the project: build/patchedPluginXmlFiles/plugin.xml is not plugin.xml");
 	}
 }
