@@ -50,6 +50,7 @@ public class IntegrationTest {
 		System.out.println("Just a file: src/test/resources/file1.java, line 2, column 2");
 		System.out.println("Just a file: src/test/resources/file1.java, line 2, coL 3");
 		System.out.println("Just a file: src/test/resources/file1.java( 5 ,  4   )    ");
+		System.out.println("Just a file: src/test/resources/file1.java (30 KiB)");
 		System.out.println("Just a file with path: file://resources/file1.java:5:4");
 		System.out.println("Just a file with path: C:\\integration\\file1.java:5:4");
 		System.out.println("colon at the end: resources/file1.java:5:1:");

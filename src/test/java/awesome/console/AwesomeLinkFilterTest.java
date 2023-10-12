@@ -251,6 +251,11 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	@Test
+	public void testIllegalLineNumberAndColumn() {
+		assertPathDetection("Vue2 build: static/css/app.b8050232.css (259 KiB)", "static/css/app.b8050232.css");
+	}
+
+	@Test
 	public void testPathWithSingleDotOrDoubleDot() {
 		assertPathDetection("Path: . ", ".");
 		assertPathDetection("Path: .. ", "..");
