@@ -67,12 +67,12 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
 	public static final String REGEX_PATH_WITH_SPACE = String.format(
-			"\"(?<spacePath>(?<protocol1>%s)?(%s)?((%s|%s)+))\"",
+			"\"(?<spacePath>(?<protocol1>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))\"",
 			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR
 	);
 
 	public static final String REGEX_PATH = String.format(
-			"(?<path>(?<protocol2>%s)?(%s)?((%s|%s)+))",
+			"(?<path>(?<protocol2>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))",
 			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR
 	);
 
