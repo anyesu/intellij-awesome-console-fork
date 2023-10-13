@@ -3,6 +3,7 @@ package awesome.console.util;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.HyperlinkInfoFactory;
 import com.intellij.execution.filters.LazyFileHyperlinkInfo;
+import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
@@ -43,8 +44,16 @@ public class HyperlinkUtils {
 
     @NotNull
     public static HyperlinkInfo createMultipleFilesHyperlinkInfo(@NotNull List<? extends VirtualFile> files,
-                                                                 int line, @NotNull Project project, boolean useFix) {
-        return createMultipleFilesHyperlinkInfo(files, line, project, useFix, null);
+                                                                 int row, int col,
+                                                                 @NotNull Project project, boolean useFix) {
+        // ref: https://github.com/JetBrains/intellij-community/blob/212.5080/platform/platform-impl/src/com/intellij/ide/util/GotoLineNumberDialog.java#L53-L55
+        final int row2 = row > 0 ? row - 1 : 0;
+        final int col2 = col > 0 ? col - 1 : 0;
+        return createMultipleFilesHyperlinkInfo(
+                files, row, project, useFix,
+                (_project, psiFile, editor, originalEditor) ->
+                        editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(row2, col2))
+        );
     }
 
     @NotNull
@@ -53,6 +62,7 @@ public class HyperlinkUtils {
                                                                  @NotNull Project project,
                                                                  boolean useFix,
                                                                  HyperlinkInfoFactory.@Nullable HyperlinkHandler action) {
+        line = line > 0 ? line - 1 : 0;
         if (useFix) {
             return new MultipleFilesHyperlinkInfo(files, line, project, action);
         }

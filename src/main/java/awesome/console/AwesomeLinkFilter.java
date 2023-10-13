@@ -14,8 +14,6 @@ import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.ide.browsers.OpenUrlHyperlinkInfo;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.LogicalPosition;
-import com.intellij.openapi.editor.VisualPosition;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -322,15 +320,10 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				matchingFiles = bestMatchingFiles;
 			}
 
-			// ref: https://github.com/JetBrains/intellij-community/blob/212.5080/platform/platform-impl/src/com/intellij/ide/util/GotoLineNumberDialog.java#L53-L55
-			final int row = match.linkedRow <= 0 ? 0 : match.linkedRow - 1;
-			final int col = match.linkedCol <= 0 ? 0 : match.linkedCol - 1;
 			final HyperlinkInfo linkInfo = HyperlinkUtils.createMultipleFilesHyperlinkInfo(
 					matchingFiles,
-					row,
-					project,
-					config.fixChooseTargetFile,
-					(project, psiFile, editor, originalEditor) -> editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(row, col))
+					match.linkedRow, match.linkedCol,
+					project, config.fixChooseTargetFile
 			);
 
 			results.add(new Result(
