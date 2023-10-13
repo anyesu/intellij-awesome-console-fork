@@ -136,8 +136,10 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		int offset = 0;
 
 		for (final String chunk : chunks) {
-			results.addAll(getResultItemsFile(chunk, startPoint + offset));
-			if (config.SEARCH_URLS) {
+			if (config.searchFiles) {
+				results.addAll(getResultItemsFile(chunk, startPoint + offset));
+			}
+			if (config.searchUrls) {
 				results.addAll(getResultItemsUrl(chunk, startPoint + offset));
 			}
 			offset += chunk.length();
@@ -152,7 +154,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			// Ignore handling java stackTrace as ExceptionFilter does well
 			return false;
 		}
-		return true;
+		return config.searchFiles || config.searchUrls;
 	}
 
 	private void prepareFilter() {

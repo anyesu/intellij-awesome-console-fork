@@ -13,7 +13,8 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JCheckBox limitLineMatchingByCheckBox;
 	public JFormattedTextField maxLengthTextField;
 	public JCheckBox matchLinesLongerThanCheckBox;
-	public JCheckBox searchForURLsFileCheckBox;
+	public JCheckBox searchForURLsCheckBox;
+	public JCheckBox searchForFilesCheckBox;
 	public JCheckBox ignorePatternCheckBox;
 	public JTextField ignorePatternTextField;
 	public JCheckBox fixChooseTargetFileCheckBox;
@@ -25,6 +26,7 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		setupLineLimit();
 		setupSplitLineIntoChunk();
 		setupMatchURLs();
+		setupMatchFiles();
 		setupIgnorePattern();
 		setupFixChooseTargetFileCheckBox();
 		setupFileTypes();
@@ -118,19 +120,15 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	}
 
 	private void setupMatchURLs() {
-		searchForURLsFileCheckBox = new JCheckBox("searchForURLsFileCheckBox");
-		searchForURLsFileCheckBox.setToolTipText("Uncheck if you do not want URLs parsed from the console.");
-		JPopupMenu popup = new JPopupMenu("Defaults");
-		searchForURLsFileCheckBox.setComponentPopupMenu(popup);
+		searchForURLsCheckBox = new JCheckBox();
+		searchForURLsCheckBox.setToolTipText("Uncheck if you do not want URLs parsed from the console.");
+		setupRestore(searchForURLsCheckBox, e -> searchForURLsCheckBox.setSelected(DEFAULT_SEARCH_URLS));
+	}
 
-		final JMenuItem itm = popup.add("Restore defaults");
-		itm.setMnemonic(KeyEvent.VK_R);
-		itm.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				searchForURLsFileCheckBox.setSelected(DEFAULT_SEARCH_URLS);
-			}
-		});
+	private void setupMatchFiles() {
+		searchForFilesCheckBox = new JCheckBox();
+		searchForFilesCheckBox.setToolTipText("Uncheck if you do not want file paths parsed from the console.");
+		setupRestore(searchForFilesCheckBox, e -> searchForFilesCheckBox.setSelected(DEFAULT_SEARCH_URLS));
 	}
 
 	private void setupIgnorePattern() {

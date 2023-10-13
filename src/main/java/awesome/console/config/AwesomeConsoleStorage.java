@@ -38,7 +38,9 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
 
     public volatile int LINE_MAX_LENGTH = DEFAULT_LINE_MAX_LENGTH;
 
-    public volatile boolean SEARCH_URLS = DEFAULT_SEARCH_URLS;
+    public volatile boolean searchUrls = DEFAULT_SEARCH_URLS;
+
+    public volatile boolean searchFiles = DEFAULT_SEARCH_FILES;
 
     @Transient
     public volatile Matcher ignoreMatcher = DEFAULT_IGNORE_MATCHER;

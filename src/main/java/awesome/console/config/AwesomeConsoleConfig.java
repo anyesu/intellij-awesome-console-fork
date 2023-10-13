@@ -36,7 +36,8 @@ public class AwesomeConsoleConfig implements Configurable {
 		form.matchLinesLongerThanCheckBox.setEnabled(storage.LIMIT_LINE_LENGTH);
 		form.matchLinesLongerThanCheckBox.setSelected(storage.SPLIT_ON_LIMIT);
 
-		form.searchForURLsFileCheckBox.setSelected(storage.SEARCH_URLS);
+		form.searchForURLsCheckBox.setSelected(storage.searchUrls);
+		form.searchForFilesCheckBox.setSelected(storage.searchFiles);
 
 		form.maxLengthTextField.setText(String.valueOf(storage.LINE_MAX_LENGTH));
 		form.maxLengthTextField.setEnabled(storage.LIMIT_LINE_LENGTH);
@@ -96,7 +97,8 @@ public class AwesomeConsoleConfig implements Configurable {
 				|| form.limitLineMatchingByCheckBox.isSelected() != storage.LIMIT_LINE_LENGTH
 				|| len != storage.LINE_MAX_LENGTH
 				|| form.matchLinesLongerThanCheckBox.isSelected() != storage.SPLIT_ON_LIMIT
-				|| form.searchForURLsFileCheckBox.isSelected() != storage.SEARCH_URLS
+				|| form.searchForURLsCheckBox.isSelected() != storage.searchUrls
+				|| form.searchForFilesCheckBox.isSelected() != storage.searchFiles
 				|| form.ignorePatternCheckBox.isSelected() != storage.isUseIgnorePattern()
 				|| !form.ignorePatternTextField.getText().trim().equals(storage.getIgnorePatternText())
 				|| form.fixChooseTargetFileCheckBox.isSelected() != storage.fixChooseTargetFile
@@ -135,7 +137,9 @@ public class AwesomeConsoleConfig implements Configurable {
 		storage.LIMIT_LINE_LENGTH = form.limitLineMatchingByCheckBox.isSelected();
 		storage.LINE_MAX_LENGTH = maxLength;
 		storage.SPLIT_ON_LIMIT = form.matchLinesLongerThanCheckBox.isSelected();
-		storage.SEARCH_URLS = form.searchForURLsFileCheckBox.isSelected();
+
+		storage.searchUrls = form.searchForURLsCheckBox.isSelected();
+		storage.searchFiles = form.searchForFilesCheckBox.isSelected();
 
 		storage.setUseIgnorePattern(useIgnorePattern);
 		storage.setIgnorePatternText(ignorePatternText);
