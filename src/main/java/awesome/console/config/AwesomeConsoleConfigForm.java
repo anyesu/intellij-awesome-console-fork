@@ -17,6 +17,8 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JCheckBox ignorePatternCheckBox;
 	public JTextField ignorePatternTextField;
 	public JCheckBox fixChooseTargetFileCheckBox;
+	public JCheckBox fileTypesCheckBox;
+	public JTextField fileTypesTextField;
 
     private void createUIComponents() {
 		setupDebugMode();
@@ -25,6 +27,7 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		setupMatchURLs();
 		setupIgnorePattern();
 		setupFixChooseTargetFileCheckBox();
+		setupFileTypes();
 	}
 
 	private void setupRestore(JComponent component, ActionListener listener) {
@@ -35,6 +38,26 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		item.addActionListener(listener);
 
 		component.setComponentPopupMenu(popup);
+	}
+
+	private void bindCheckBoxTextField(JCheckBox checkBox, JTextField textField, boolean defaultEnabled, String defaultText) {
+		bindCheckBoxTextField(checkBox, textField);
+		setupRestore(textField, e -> setupCheckBoxTextField(checkBox, defaultEnabled, textField, defaultText));
+	}
+
+	private void bindCheckBoxTextField(JCheckBox checkBox, JTextField textField) {
+		checkBox.addActionListener(e -> {
+			final boolean enabled = checkBox.isSelected();
+			textField.setEnabled(enabled);
+			textField.setEditable(enabled);
+		});
+	}
+
+	private void setupCheckBoxTextField(JCheckBox checkBox, boolean enabled, JTextField textField, String text) {
+		checkBox.setSelected(enabled);
+		textField.setText(text);
+		textField.setEnabled(enabled);
+		textField.setEditable(enabled);
 	}
 
 	private void setupDebugMode() {
@@ -112,26 +135,29 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 
 	private void setupIgnorePattern() {
 		ignorePatternCheckBox = new JCheckBox();
-		ignorePatternCheckBox.addActionListener(e -> {
-			final boolean enabled = ignorePatternCheckBox.isSelected();
-			ignorePatternTextField.setEnabled(enabled);
-			ignorePatternTextField.setEditable(enabled);
-		});
-
 		ignorePatternTextField = new JTextField();
-		setupRestore(ignorePatternTextField, e -> initIgnorePattern(DEFAULT_USE_IGNORE_PATTERN, DEFAULT_IGNORE_PATTERN_TEXT));
+		bindCheckBoxTextField(ignorePatternCheckBox, ignorePatternTextField, DEFAULT_USE_IGNORE_PATTERN, DEFAULT_IGNORE_PATTERN_TEXT);
 	}
 
 	public void initIgnorePattern(boolean enabled, String text) {
-		ignorePatternCheckBox.setSelected(enabled);
-		ignorePatternTextField.setText(text);
-		ignorePatternTextField.setEnabled(enabled);
-		ignorePatternTextField.setEditable(enabled);
+		setupCheckBoxTextField(ignorePatternCheckBox, enabled, ignorePatternTextField, text);
 	}
 
 	private void setupFixChooseTargetFileCheckBox() {
 		fixChooseTargetFileCheckBox = new JCheckBox("fixChooseTargetFileCheckBox");
-		fixChooseTargetFileCheckBox.setToolTipText("Uncheck If this fix is not compatible with your newer version of IDE.");
+		fixChooseTargetFileCheckBox.setToolTipText("Uncheck if this fix is not compatible with your newer version of IDE.");
 		setupRestore(fixChooseTargetFileCheckBox, e -> fixChooseTargetFileCheckBox.setSelected(DEFAULT_FIX_CHOOSE_TARGET_FILE));
+	}
+
+	private void setupFileTypes() {
+		fileTypesCheckBox = new JCheckBox();
+		fileTypesCheckBox.setToolTipText("Fix some files still open in external programs, uncheck if you don't need it.");
+		fileTypesTextField = new JTextField();
+		fileTypesTextField.setToolTipText("Use , to separate types.");
+		bindCheckBoxTextField(fileTypesCheckBox, fileTypesTextField, DEFAULT_USE_FILE_TYPES, DEFAULT_FILE_TYPES);
+	}
+
+	public void initFileTypes(boolean enabled, String text) {
+		setupCheckBoxTextField(fileTypesCheckBox, enabled, fileTypesTextField, text);
 	}
 }

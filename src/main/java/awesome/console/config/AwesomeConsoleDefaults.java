@@ -20,4 +20,8 @@ public interface AwesomeConsoleDefaults {
     String DEFAULT_IGNORE_PATTERN_TEXT = "^(\"?)[.\\\\/]+\\1$|^node_modules/";
 
     boolean DEFAULT_FIX_CHOOSE_TARGET_FILE = true;
+
+    boolean DEFAULT_USE_FILE_TYPES = true;
+
+    String DEFAULT_FILE_TYPES = "bmp,gif,jpeg,jpg,png,webp,ttf";
 }

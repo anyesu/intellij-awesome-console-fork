@@ -45,6 +45,8 @@ public class AwesomeConsoleConfig implements Configurable {
 		form.initIgnorePattern(storage.isUseIgnorePattern(), storage.getIgnorePatternText());
 
 		form.fixChooseTargetFileCheckBox.setSelected(storage.fixChooseTargetFile);
+
+		form.initFileTypes(storage.useFileTypes, storage.getFileTypes());
 	}
 
 	private void showErrorDialog() {
@@ -97,7 +99,10 @@ public class AwesomeConsoleConfig implements Configurable {
 				|| form.searchForURLsFileCheckBox.isSelected() != storage.SEARCH_URLS
 				|| form.ignorePatternCheckBox.isSelected() != storage.isUseIgnorePattern()
 				|| !form.ignorePatternTextField.getText().trim().equals(storage.getIgnorePatternText())
-				|| form.fixChooseTargetFileCheckBox.isSelected() != storage.fixChooseTargetFile;
+				|| form.fixChooseTargetFileCheckBox.isSelected() != storage.fixChooseTargetFile
+				|| form.fileTypesCheckBox.isSelected() != storage.useFileTypes
+				|| !form.fileTypesTextField.getText().trim().equals(storage.getFileTypes())
+				;
 	}
 
 	@Override
@@ -137,6 +142,10 @@ public class AwesomeConsoleConfig implements Configurable {
 		form.ignorePatternTextField.setText(ignorePatternText);
 
 		storage.fixChooseTargetFile = form.fixChooseTargetFileCheckBox.isSelected();
+
+		storage.useFileTypes = form.fileTypesCheckBox.isSelected();
+		storage.setFileTypes(form.fileTypesTextField.getText().trim());
+		form.fileTypesTextField.setText(storage.getFileTypes());
 	}
 
 	@Override

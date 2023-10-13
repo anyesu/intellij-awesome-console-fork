@@ -1,5 +1,6 @@
 package awesome.console.util;
 
+import awesome.console.config.AwesomeConsoleStorage;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.HyperlinkInfoFactory;
 import com.intellij.execution.filters.LazyFileHyperlinkInfo;
@@ -7,7 +8,9 @@ import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.PathUtil;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +29,18 @@ public class HyperlinkUtils {
     }
 
     public static HyperlinkInfo buildFileHyperlinkInfo(@NotNull Project project, @NotNull String filePath, int row, int col) {
+        try {
+            // Fix the problem of IDE and external programs opening some non-text files at the same time
+            final String ext = PathUtil.getFileExtension(filePath);
+            AwesomeConsoleStorage config = AwesomeConsoleStorage.getInstance();
+            if (null != ext && config.useFileTypes && config.fileTypeSet.contains(ext.toLowerCase())) {
+                VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(filePath);
+                if (null != virtualFile) {
+                    return createMultipleFilesHyperlinkInfo(List.of(virtualFile), row, col, project, false);
+                }
+            }
+        } catch (Throwable ignored) {
+        }
         row = row > 0 ? row - 1 : 0;
         col = col > 0 ? col - 1 : 0;
         return new LazyFileHyperlinkInfo(project, filePath, row, col) {

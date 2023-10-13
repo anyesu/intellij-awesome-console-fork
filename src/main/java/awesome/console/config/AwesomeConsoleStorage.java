@@ -8,6 +8,7 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -44,9 +45,20 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
 
     public volatile boolean fixChooseTargetFile = DEFAULT_FIX_CHOOSE_TARGET_FILE;
 
+    public volatile boolean useFileTypes = DEFAULT_USE_FILE_TYPES;
+
+    @Transient
+    public volatile Set<String> fileTypeSet;
+
     private volatile boolean useIgnorePattern = DEFAULT_USE_IGNORE_PATTERN;
 
     private volatile String ignorePatternText = DEFAULT_IGNORE_PATTERN_TEXT;
+
+    private volatile String fileTypes;
+
+    public AwesomeConsoleStorage() {
+        setFileTypes(DEFAULT_FILE_TYPES);
+    }
 
     /**
      * Helpers
@@ -87,5 +99,14 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
             }
         }
         this.ignorePatternText = ignorePatternText;
+    }
+
+    public String getFileTypes() {
+        return fileTypes;
+    }
+
+    public void setFileTypes(String fileTypes) {
+        this.fileTypeSet = Set.of(fileTypes.toLowerCase().split(","));
+        this.fileTypes = fileTypes;
     }
 }
