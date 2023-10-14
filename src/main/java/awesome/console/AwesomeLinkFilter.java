@@ -272,7 +272,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				continue;
 			}
 
-			File file = resolveFile(match.path);
+			String matchPath = match.path;
+			File file = resolveFile(matchPath);
 			if (null != file) {
 				final boolean isExternal = isExternal(file);
 				final boolean exists = file.exists();
@@ -282,16 +283,16 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 					results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
 					continue;
 				} else if (isExternal) {
-					if (!match.path.startsWith("/") && !match.path.startsWith("\\")) {
+					if (!matchPath.startsWith("/") && !matchPath.startsWith("\\")) {
 						continue;
 					}
 					// Resolve absolute paths starting with a slash into relative paths based on the project root as a fallback
-					filePath = new File(project.getBasePath(), match.path).getAbsolutePath();
+					filePath = new File(project.getBasePath(), matchPath).getAbsolutePath();
 				}
-				match.path = getRelativePath(filePath);
+				matchPath = getRelativePath(filePath);
 			}
 
-			String path = PathUtil.getFileName(match.path);
+			String path = PathUtil.getFileName(matchPath);
 			if (path.endsWith("$")) {
 				path = path.substring(0, path.length() - 1);
 			}
@@ -317,7 +318,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				continue;
 			}
 
-			final List<VirtualFile> bestMatchingFiles = findBestMatchingFiles(match, matchingFiles);
+			final List<VirtualFile> bestMatchingFiles = findBestMatchingFiles(generalizePath(matchPath), matchingFiles);
 			if (bestMatchingFiles != null && !bestMatchingFiles.isEmpty()) {
 				matchingFiles = bestMatchingFiles;
 			}
@@ -348,10 +349,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			basePath += "/";
 		}
 		return path.startsWith(basePath) ? path.substring(basePath.length()) : path;
-	}
-
-	private List<VirtualFile> findBestMatchingFiles(final FileLinkMatch match, final List<VirtualFile> matchingFiles) {
-		return findBestMatchingFiles(generalizePath(match.path), matchingFiles);
 	}
 
 	private List<VirtualFile> findBestMatchingFiles(final String generalizedMatchPath,
