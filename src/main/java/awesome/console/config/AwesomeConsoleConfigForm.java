@@ -1,6 +1,7 @@
 package awesome.console.config;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.NumberFormatter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +16,7 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JCheckBox matchLinesLongerThanCheckBox;
 	public JCheckBox searchForURLsCheckBox;
 	public JCheckBox searchForFilesCheckBox;
+	public JCheckBox searchForClassesCheckBox;
 	public JCheckBox ignorePatternCheckBox;
 	public JTextField ignorePatternTextField;
 	public JCheckBox fixChooseTargetFileCheckBox;
@@ -43,15 +45,17 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	}
 
 	private void bindCheckBoxTextField(JCheckBox checkBox, JTextField textField, boolean defaultEnabled, String defaultText) {
-		bindCheckBoxTextField(checkBox, textField);
+		bindCheckBoxAndComponent(checkBox, textField);
 		setupRestore(textField, e -> setupCheckBoxTextField(checkBox, defaultEnabled, textField, defaultText));
 	}
 
-	private void bindCheckBoxTextField(JCheckBox checkBox, JTextField textField) {
+	private void bindCheckBoxAndComponent(JCheckBox checkBox, JComponent component) {
 		checkBox.addActionListener(e -> {
 			final boolean enabled = checkBox.isSelected();
-			textField.setEnabled(enabled);
-			textField.setEditable(enabled);
+			component.setEnabled(enabled);
+			if (component instanceof JTextComponent) {
+				((JTextComponent) component).setEditable(enabled);
+			}
 		});
 	}
 
@@ -128,7 +132,17 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	private void setupMatchFiles() {
 		searchForFilesCheckBox = new JCheckBox();
 		searchForFilesCheckBox.setToolTipText("Uncheck if you do not want file paths parsed from the console.");
-		setupRestore(searchForFilesCheckBox, e -> searchForFilesCheckBox.setSelected(DEFAULT_SEARCH_URLS));
+		setupRestore(searchForFilesCheckBox, e -> initMatchFiles(DEFAULT_SEARCH_FILES, searchForClassesCheckBox.isSelected()));
+		searchForClassesCheckBox = new JCheckBox();
+		searchForClassesCheckBox.setToolTipText("Uncheck if you do not want classes parsed from the console.");
+		setupRestore(searchForClassesCheckBox, e -> searchForClassesCheckBox.setSelected(DEFAULT_SEARCH_CLASSES));
+		bindCheckBoxAndComponent(searchForFilesCheckBox, searchForClassesCheckBox);
+	}
+
+	public void initMatchFiles(boolean enableFiles, boolean enableClasses) {
+		searchForFilesCheckBox.setSelected(enableFiles);
+		searchForClassesCheckBox.setEnabled(enableFiles);
+		searchForClassesCheckBox.setSelected(enableClasses);
 	}
 
 	private void setupIgnorePattern() {

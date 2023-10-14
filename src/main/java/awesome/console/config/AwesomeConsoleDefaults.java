@@ -17,6 +17,8 @@ public interface AwesomeConsoleDefaults {
 
     boolean DEFAULT_SEARCH_FILES = true;
 
+    boolean DEFAULT_SEARCH_CLASSES = true;
+
     boolean DEFAULT_USE_IGNORE_PATTERN = true;
 
     String DEFAULT_IGNORE_PATTERN_TEXT = "^(\"?)[.\\\\/]+\\1$|^node_modules/";

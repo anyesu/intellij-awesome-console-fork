@@ -300,7 +300,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			cacheReadLock.lock();
 			try {
 				matchingFiles = fileCache.get(path);
-				if (null == matchingFiles) {
+				if (null == matchingFiles && config.searchClasses) {
 					matchingFiles = getResultItemsFileFromBasename(path);
 				}
 				if (null != matchingFiles) {

@@ -42,6 +42,8 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
 
     public volatile boolean searchFiles = DEFAULT_SEARCH_FILES;
 
+    public volatile boolean searchClasses = DEFAULT_SEARCH_CLASSES;
+
     @Transient
     public volatile Matcher ignoreMatcher = DEFAULT_IGNORE_MATCHER;
 

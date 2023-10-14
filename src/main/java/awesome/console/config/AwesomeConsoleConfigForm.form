@@ -82,10 +82,18 @@
           </component>
           <component id="6ef12" class="javax.swing.JCheckBox" binding="searchForFilesCheckBox" custom-create="true" default-binding="true">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Match file paths."/>
+            </properties>
+          </component>
+          <component id="2cd59" class="javax.swing.JCheckBox" binding="searchForClassesCheckBox" custom-create="true" default-binding="true">
+            <constraints>
+              <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Match Java-like Classes."/>
             </properties>
           </component>
           <component id="7f5a7" class="javax.swing.JCheckBox" binding="ignorePatternCheckBox" custom-create="true" default-binding="true">
