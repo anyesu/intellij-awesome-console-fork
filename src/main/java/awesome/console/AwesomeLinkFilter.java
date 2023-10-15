@@ -65,12 +65,12 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
 	public static final String REGEX_PATH_WITH_SPACE = String.format(
-			"\"(?<spacePath>(?<protocol1>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))\"",
+			"\"(?<path1>(?<protocol1>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))\"",
 			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR
 	);
 
 	public static final String REGEX_PATH = String.format(
-			"(?<path>(?<protocol2>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))",
+			"(?<path2>(?<protocol2>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))",
 			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR
 	);
 
@@ -570,14 +570,18 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		fileMatcher.reset(line);
 		final List<FileLinkMatch> results = new LinkedList<>();
 		while (fileMatcher.find()) {
-			String match = fileMatcher.group("link");
-			String path = RegexUtils.matchGroup(fileMatcher, "spacePath", "path");
+			String match = RegexUtils.tryMatchGroup(fileMatcher, "link");
+			if (null == match) {
+				continue;
+			}
+
+			String path = RegexUtils.tryMatchGroup(fileMatcher, "path");
 			if (null == path) {
 				logger.error("Regex group 'path' was NULL while trying to match path line: " + line + "\nfor match: " + match);
 				continue;
 			}
 
-			final String protocol = RegexUtils.matchGroup(fileMatcher, "protocol1", "protocol2");
+			final String protocol = RegexUtils.tryMatchGroup(fileMatcher, "protocol");
 			if ("file://".equalsIgnoreCase(protocol)) {
 				match = match.replace(protocol, "");
 				path = path.substring(protocol.length());
@@ -593,8 +597,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				path = SystemUtils.getUserHome() + path.substring(1);
 			}
 
-			final int row = IntegerUtil.parseInt(fileMatcher.group("row")).orElse(0);
-			final int col = IntegerUtil.parseInt(fileMatcher.group("col")).orElse(0);
+			final int row = IntegerUtil.parseInt(RegexUtils.tryMatchGroup(fileMatcher, "row")).orElse(0);
+			final int col = IntegerUtil.parseInt(RegexUtils.tryMatchGroup(fileMatcher, "col")).orElse(0);
 			match = decodeDwc(match);
 			int[] offsets = new int[]{0, 0};
 			if (isSurroundedBy(match, new String[]{"()", "[]", "''"}, offsets)) {

@@ -9,6 +9,20 @@ import java.util.regex.PatternSyntaxException;
  */
 public class RegexUtils {
 
+    public static String tryMatchGroup(final Matcher matcher, final String group) {
+        return tryMatchGroup(matcher, group, 5);
+    }
+
+    public static String tryMatchGroup(final Matcher matcher, final String group, final int retries) {
+        for (int i = 0; i <= retries; i++) {
+            String match = matchGroup(matcher, group + (i > 0 ? i : ""));
+            if (null != match) {
+                return match;
+            }
+        }
+        return null;
+    }
+
     public static String matchGroup(final Matcher matcher, final String... groups) {
         for (String group : groups) {
             try {
