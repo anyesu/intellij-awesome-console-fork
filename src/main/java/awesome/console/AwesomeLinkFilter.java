@@ -54,7 +54,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public static final String REGEX_SEPARATOR = "[\\\\/]+";
 
-	public static final String REGEX_CHAR = String.format("[^\\\\/:*?\"<>|\\s]%s?", DWC);
+	public static final String REGEX_CHAR = "[^\\\\/:*?\"<>|\\s]";
 
 	public static final String REGEX_DRIVE = "(?:~|[a-zA-Z]:)?" + REGEX_SEPARATOR;
 
@@ -97,6 +97,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	private final ThreadLocal<Matcher> urlMatcher = ThreadLocal.withInitial(() -> URL_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> driveMatcher = ThreadLocal.withInitial(() -> DRIVE_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> stackTraceElementMatcher = ThreadLocal.withInitial(() -> STACK_TRACE_ELEMENT_PATTERN.matcher(""));
+	private final ThreadLocal<Matcher> fileMatcherConfig = new ThreadLocal<>();
 	private final ThreadLocal<Matcher> ignoreMatcher = new ThreadLocal<>();
 	private final ProjectRootManager projectRootManager;
 
@@ -158,6 +159,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	}
 
 	private void prepareFilter() {
+		prepareMatcher(this.fileMatcherConfig, config.filePattern);
 		prepareMatcher(this.ignoreMatcher, config.ignorePattern);
 	}
 
@@ -565,7 +567,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	@NotNull
 	public List<FileLinkMatch> detectPaths(@NotNull final String line) {
-		final Matcher fileMatcher = this.fileMatcher.get();
+		final Matcher fileMatcherConfig = this.fileMatcherConfig.get();
+		final Matcher fileMatcher = config.useFilePattern && null != fileMatcherConfig ? fileMatcherConfig : this.fileMatcher.get();
 		fileMatcher.reset(line);
 		final List<FileLinkMatch> results = new LinkedList<>();
 		while (fileMatcher.find()) {

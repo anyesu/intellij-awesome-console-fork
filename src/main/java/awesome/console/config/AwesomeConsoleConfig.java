@@ -2,7 +2,12 @@ package awesome.console.config;
 
 import awesome.console.util.RegexUtils;
 import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.util.text.StringUtil;
+import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -19,6 +24,8 @@ import javax.swing.*;
  * ref: https://plugins.jetbrains.com/docs/intellij/settings-guide.html
  */
 public class AwesomeConsoleConfig implements Configurable {
+
+	public static final String[] FILE_PATTERN_REQUIRED_GROUP = "link,path,row,col".split(",");
 
 	private AwesomeConsoleConfigForm form;
 
@@ -37,7 +44,7 @@ public class AwesomeConsoleConfig implements Configurable {
 		form.matchLinesLongerThanCheckBox.setSelected(storage.SPLIT_ON_LIMIT);
 
 		form.searchForURLsCheckBox.setSelected(storage.searchUrls);
-		form.initMatchFiles(storage.searchFiles, storage.searchClasses);
+		form.initMatchFiles(storage.searchFiles, storage.searchClasses, storage.useFilePattern, storage.getFilePatternText());
 
 		form.maxLengthTextField.setText(String.valueOf(storage.LINE_MAX_LENGTH));
 		form.maxLengthTextField.setEnabled(storage.LIMIT_LINE_LENGTH);
@@ -56,6 +63,36 @@ public class AwesomeConsoleConfig implements Configurable {
 
 	private void showErrorDialog(String title, String message) {
 		JOptionPane.showMessageDialog(form.mainpanel, message, title, JOptionPane.ERROR_MESSAGE);
+	}
+
+	private boolean checkRegex(@NotNull final String pattern) {
+		if (pattern.isEmpty() || !RegexUtils.isValidRegex(pattern)) {
+			showErrorDialog("Invalid value", "Invalid pattern: " + StringUtil.trimMiddle(pattern, 150));
+			return false;
+		}
+		return true;
+	}
+
+	private boolean checkRegexGroup(@NotNull final String pattern, @NotNull final String... groups) {
+		if (pattern.isEmpty()) {
+			return false;
+		}
+		boolean hasGroup;
+		for (String group : groups) {
+			try {
+				hasGroup = Pattern.compile("\\(\\?<" + group + "[1-5]?>").matcher(pattern).find();
+			} catch (PatternSyntaxException e) {
+				hasGroup = false;
+			}
+			if (!hasGroup) {
+				showErrorDialog("Invalid value", String.format(
+						"Missing required group \"%s\": %s",
+						group, StringUtil.trimMiddle(pattern, 150)
+				));
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -100,6 +137,8 @@ public class AwesomeConsoleConfig implements Configurable {
 				|| form.searchForURLsCheckBox.isSelected() != storage.searchUrls
 				|| form.searchForFilesCheckBox.isSelected() != storage.searchFiles
 				|| form.searchForClassesCheckBox.isSelected() != storage.searchClasses
+				|| form.filePatternCheckBox.isSelected() != storage.useFilePattern
+				|| !form.filePatternTextArea.getText().trim().equals(storage.getFilePatternText())
 				|| form.ignorePatternCheckBox.isSelected() != storage.useIgnorePattern
 				|| !form.ignorePatternTextField.getText().trim().equals(storage.getIgnorePatternText())
 				|| form.fixChooseTargetFileCheckBox.isSelected() != storage.fixChooseTargetFile
@@ -127,10 +166,19 @@ public class AwesomeConsoleConfig implements Configurable {
 			return;
 		}
 
+		final boolean useFilePattern = form.filePatternCheckBox.isSelected();
+		final String filePatternText = form.filePatternTextArea.getText().trim();
+
+		if (!Objects.equals(filePatternText, storage.getFilePatternText()) &&
+				!(checkRegex(filePatternText) && checkRegexGroup(filePatternText, FILE_PATTERN_REQUIRED_GROUP))) {
+			return;
+		}
+
 		final boolean useIgnorePattern = form.ignorePatternCheckBox.isSelected();
 		final String ignorePatternText = form.ignorePatternTextField.getText().trim();
-		if (ignorePatternText.isEmpty() || !RegexUtils.isValidRegex(ignorePatternText)) {
-			showErrorDialog("Invalid value", "Invalid pattern: " + ignorePatternText);
+
+		if (!Objects.equals(ignorePatternText, storage.getIgnorePatternText()) &&
+				!checkRegex(ignorePatternText)) {
 			return;
 		}
 
@@ -142,6 +190,10 @@ public class AwesomeConsoleConfig implements Configurable {
 		storage.searchUrls = form.searchForURLsCheckBox.isSelected();
 		storage.searchFiles = form.searchForFilesCheckBox.isSelected();
 		storage.searchClasses = form.searchForClassesCheckBox.isSelected();
+
+		storage.useFilePattern = useFilePattern;
+		storage.setFilePatternText(filePatternText);
+		form.filePatternTextArea.setText(filePatternText);
 
 		storage.useIgnorePattern = useIgnorePattern;
 		storage.setIgnorePatternText(ignorePatternText);

@@ -39,6 +39,12 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
 
     public volatile boolean searchClasses = DEFAULT_SEARCH_CLASSES;
 
+    public volatile boolean useFilePattern = DEFAULT_USE_FILE_PATTERN;
+
+    @NotNull
+    @Transient
+    public volatile Pattern filePattern = DEFAULT_FILE_PATTERN;
+
     public volatile boolean useIgnorePattern = DEFAULT_USE_IGNORE_PATTERN;
 
     @NotNull
@@ -52,6 +58,8 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     @NotNull
     @Transient
     public volatile Set<String> fileTypeSet = Collections.emptySet();
+
+    private volatile String filePatternText = DEFAULT_FILE_PATTERN_TEXT;
 
     private volatile String ignorePatternText = DEFAULT_IGNORE_PATTERN_TEXT;
 
@@ -77,6 +85,22 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     @Override
     public void loadState(@NotNull AwesomeConsoleStorage state) {
         XmlSerializerUtil.copyBean(state, this);
+    }
+
+    public String getFilePatternText() {
+        return filePatternText;
+    }
+
+    public void setFilePatternText(String filePatternText) {
+        if (!Objects.equals(this.filePatternText, filePatternText)) {
+            try {
+                this.filePattern = Pattern.compile(filePatternText, Pattern.UNICODE_CHARACTER_CLASS);
+                this.filePatternText = filePatternText;
+            } catch (PatternSyntaxException e) {
+                this.filePattern = DEFAULT_FILE_PATTERN;
+                this.filePatternText = DEFAULT_FILE_PATTERN_TEXT;
+            }
+        }
     }
 
     public String getIgnorePatternText() {

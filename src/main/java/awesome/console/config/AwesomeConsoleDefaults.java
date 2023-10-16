@@ -1,5 +1,6 @@
 package awesome.console.config;
 
+import awesome.console.AwesomeLinkFilter;
 import java.util.regex.Pattern;
 
 /**
@@ -20,6 +21,12 @@ public interface AwesomeConsoleDefaults {
     boolean DEFAULT_SEARCH_FILES = true;
 
     boolean DEFAULT_SEARCH_CLASSES = true;
+
+    boolean DEFAULT_USE_FILE_PATTERN = false;
+
+    Pattern DEFAULT_FILE_PATTERN = AwesomeLinkFilter.FILE_PATTERN;
+
+    String DEFAULT_FILE_PATTERN_TEXT = DEFAULT_FILE_PATTERN.pattern();
 
     boolean DEFAULT_USE_IGNORE_PATTERN = true;
 
