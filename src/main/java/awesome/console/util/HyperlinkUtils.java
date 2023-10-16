@@ -2,6 +2,7 @@ package awesome.console.util;
 
 import awesome.console.config.AwesomeConsoleStorage;
 import com.intellij.execution.filters.HyperlinkInfo;
+import com.intellij.execution.filters.HyperlinkInfoBase;
 import com.intellij.execution.filters.HyperlinkInfoFactory;
 import com.intellij.execution.filters.LazyFileHyperlinkInfo;
 import com.intellij.openapi.editor.LogicalPosition;
@@ -78,9 +79,10 @@ public class HyperlinkUtils {
                                                                  boolean useFix,
                                                                  HyperlinkInfoFactory.@Nullable HyperlinkHandler action) {
         line = line > 0 ? line - 1 : 0;
-        if (useFix) {
-            return new MultipleFilesHyperlinkInfo(files, line, project, action);
+        HyperlinkInfo linkInfo = HyperlinkInfoFactory.getInstance().createMultipleFilesHyperlinkInfo(files, line, project, action);
+        if (useFix && linkInfo instanceof HyperlinkInfoBase) {
+            return new MultipleFilesHyperlinkInfoWrapper((HyperlinkInfoBase) linkInfo);
         }
-        return HyperlinkInfoFactory.getInstance().createMultipleFilesHyperlinkInfo(files, line, project, action);
+        return linkInfo;
     }
 }
