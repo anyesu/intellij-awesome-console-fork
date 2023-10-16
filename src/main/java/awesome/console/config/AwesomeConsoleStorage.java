@@ -7,9 +7,9 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.jetbrains.annotations.NotNull;
@@ -25,11 +25,6 @@ import org.jetbrains.annotations.NotNull;
 )
 public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeConsoleStorage>, AwesomeConsoleDefaults {
 
-    public static final Matcher DEFAULT_IGNORE_MATCHER = Pattern.compile(
-            DEFAULT_IGNORE_PATTERN_TEXT,
-            Pattern.UNICODE_CHARACTER_CLASS
-    ).matcher("");
-
     public volatile boolean DEBUG_MODE = DEFAULT_DEBUG_MODE;
 
     public volatile boolean SPLIT_ON_LIMIT = DEFAULT_SPLIT_ON_LIMIT;
@@ -44,17 +39,19 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
 
     public volatile boolean searchClasses = DEFAULT_SEARCH_CLASSES;
 
+    public volatile boolean useIgnorePattern = DEFAULT_USE_IGNORE_PATTERN;
+
+    @NotNull
     @Transient
-    public volatile Matcher ignoreMatcher = DEFAULT_IGNORE_MATCHER;
+    public volatile Pattern ignorePattern = DEFAULT_IGNORE_PATTERN;
 
     public volatile boolean fixChooseTargetFile = DEFAULT_FIX_CHOOSE_TARGET_FILE;
 
     public volatile boolean useFileTypes = DEFAULT_USE_FILE_TYPES;
 
+    @NotNull
     @Transient
-    public volatile Set<String> fileTypeSet;
-
-    private volatile boolean useIgnorePattern = DEFAULT_USE_IGNORE_PATTERN;
+    public volatile Set<String> fileTypeSet = Collections.emptySet();
 
     private volatile String ignorePatternText = DEFAULT_IGNORE_PATTERN_TEXT;
 
@@ -82,14 +79,6 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
         XmlSerializerUtil.copyBean(state, this);
     }
 
-    public boolean isUseIgnorePattern() {
-        return useIgnorePattern;
-    }
-
-    public void setUseIgnorePattern(boolean useIgnorePattern) {
-        this.useIgnorePattern = useIgnorePattern;
-    }
-
     public String getIgnorePatternText() {
         return ignorePatternText;
     }
@@ -97,12 +86,13 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     public void setIgnorePatternText(String ignorePatternText) {
         if (!Objects.equals(this.ignorePatternText, ignorePatternText)) {
             try {
-                ignoreMatcher = Pattern.compile(ignorePatternText, Pattern.UNICODE_CHARACTER_CLASS).matcher("");
+                this.ignorePattern = Pattern.compile(ignorePatternText, Pattern.UNICODE_CHARACTER_CLASS);
+                this.ignorePatternText = ignorePatternText;
             } catch (PatternSyntaxException e) {
-                ignoreMatcher = DEFAULT_IGNORE_MATCHER;
+                this.ignorePattern = DEFAULT_IGNORE_PATTERN;
+                this.ignorePatternText = DEFAULT_IGNORE_PATTERN_TEXT;
             }
         }
-        this.ignorePatternText = ignorePatternText;
     }
 
     public String getFileTypes() {

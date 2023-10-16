@@ -158,14 +158,13 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	}
 
 	private void prepareFilter() {
-		prepareIgnoreMatcher();
+		prepareMatcher(this.ignoreMatcher, config.ignorePattern);
 	}
 
-	private void prepareIgnoreMatcher() {
-		final Matcher ignoreMatcher = this.ignoreMatcher.get();
-		final Matcher ignoreMatcherConfig = config.ignoreMatcher;
-		if (!Objects.equals(ignoreMatcher, ignoreMatcherConfig)) {
-			this.ignoreMatcher.set(ignoreMatcherConfig);
+	private void prepareMatcher(@NotNull final ThreadLocal<Matcher> threadLocal, @NotNull final Pattern pattern) {
+		final Matcher matcher = threadLocal.get();
+		if (null == matcher || !matcher.pattern().equals(pattern)) {
+			threadLocal.set(pattern.matcher(""));
 		}
 	}
 
@@ -650,6 +649,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	private boolean shouldIgnore(@NotNull final String match) {
 		final Matcher ignoreMatcher = this.ignoreMatcher.get();
-		return config.isUseIgnorePattern() && null != ignoreMatcher && ignoreMatcher.reset(match).find();
+		return config.useIgnorePattern && null != ignoreMatcher && ignoreMatcher.reset(match).find();
 	}
 }

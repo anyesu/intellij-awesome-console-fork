@@ -1,5 +1,7 @@
 package awesome.console.config;
 
+import java.util.regex.Pattern;
+
 /**
  * @author anyesu
  */
@@ -22,6 +24,11 @@ public interface AwesomeConsoleDefaults {
     boolean DEFAULT_USE_IGNORE_PATTERN = true;
 
     String DEFAULT_IGNORE_PATTERN_TEXT = "^(\"?)[.\\\\/]+\\1$|^node_modules/";
+
+    Pattern DEFAULT_IGNORE_PATTERN = Pattern.compile(
+            DEFAULT_IGNORE_PATTERN_TEXT,
+            Pattern.UNICODE_CHARACTER_CLASS
+    );
 
     boolean DEFAULT_FIX_CHOOSE_TARGET_FILE = true;
 
