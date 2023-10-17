@@ -238,6 +238,12 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	}
 
 	private File resolveFile(@NotNull String path) {
+		path = generalizePath(path);
+		// when changing the size of Terminal on Windows, the input may contain the '\0'
+		if (path.contains("\0")) {
+			path = path.replace("\0", "");
+		}
+
 		if (FileUtils.isUncPath(path)) {
 			return null;
 		}
