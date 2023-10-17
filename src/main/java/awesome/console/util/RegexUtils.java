@@ -1,26 +1,42 @@
 package awesome.console.util;
 
+import static awesome.console.config.AwesomeConsoleDefaults.DEFAULT_GROUP_RETRIES;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.IntStream;
 
 /**
  * @author anyesu
  */
 public class RegexUtils {
 
+    public static int[] tryGetGroupRange(final Matcher matcher, final String group) {
+        return tryGetGroupRange(matcher, group, DEFAULT_GROUP_RETRIES);
+    }
+
+    public static int[] tryGetGroupRange(final Matcher matcher, final String group, final int retries) {
+        int start = matcher.start(), end = matcher.end();
+        for (int i = 0; i <= retries; i++) {
+            String groupName = i > 0 ? group + i : group;
+            try {
+                start = matcher.start(groupName);
+                end = matcher.end(groupName);
+                break;
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return new int[]{start, end};
+    }
+
     public static String tryMatchGroup(final Matcher matcher, final String group) {
-        return tryMatchGroup(matcher, group, 5);
+        return tryMatchGroup(matcher, group, DEFAULT_GROUP_RETRIES);
     }
 
     public static String tryMatchGroup(final Matcher matcher, final String group, final int retries) {
-        for (int i = 0; i <= retries; i++) {
-            String match = matchGroup(matcher, group + (i > 0 ? i : ""));
-            if (null != match) {
-                return match;
-            }
-        }
-        return null;
+        String[] groups = IntStream.range(0, retries + 1).mapToObj(i -> i > 0 ? group + i : group).toArray(String[]::new);
+        return matchGroup(matcher, groups);
     }
 
     public static String matchGroup(final Matcher matcher, final String... groups) {

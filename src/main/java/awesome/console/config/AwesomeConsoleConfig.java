@@ -1,9 +1,13 @@
 package awesome.console.config;
 
+import static awesome.console.config.AwesomeConsoleDefaults.DEFAULT_GROUP_RETRIES;
+import static awesome.console.config.AwesomeConsoleDefaults.FILE_PATTERN_REQUIRED_GROUPS;
+
 import awesome.console.util.RegexUtils;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.util.text.StringUtil;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.jetbrains.annotations.Nls;
@@ -24,8 +28,6 @@ import javax.swing.*;
  * ref: https://plugins.jetbrains.com/docs/intellij/settings-guide.html
  */
 public class AwesomeConsoleConfig implements Configurable {
-
-	public static final String[] FILE_PATTERN_REQUIRED_GROUP = "link,path,row,col".split(",");
 
 	private AwesomeConsoleConfigForm form;
 
@@ -80,8 +82,14 @@ public class AwesomeConsoleConfig implements Configurable {
 		boolean hasGroup;
 		for (String group : groups) {
 			try {
-				hasGroup = Pattern.compile("\\(\\?<" + group + "[1-5]?>").matcher(pattern).find();
-			} catch (PatternSyntaxException e) {
+				Matcher matcher = Pattern.compile("\\(\\?<" + group + "([1-9][0-9]*)?>").matcher(pattern);
+				if (matcher.find()) {
+					String index = matcher.group(1);
+					hasGroup = StringUtil.isEmpty(index) || Integer.parseInt(index) <= DEFAULT_GROUP_RETRIES;
+				} else {
+					hasGroup = false;
+				}
+			} catch (PatternSyntaxException | NumberFormatException e) {
 				hasGroup = false;
 			}
 			if (!hasGroup) {
@@ -170,7 +178,7 @@ public class AwesomeConsoleConfig implements Configurable {
 		final String filePatternText = form.filePatternTextArea.getText().trim();
 
 		if (!Objects.equals(filePatternText, storage.getFilePatternText()) &&
-				!(checkRegex(filePatternText) && checkRegexGroup(filePatternText, FILE_PATTERN_REQUIRED_GROUP))) {
+				!(checkRegex(filePatternText) && checkRegexGroup(filePatternText, FILE_PATTERN_REQUIRED_GROUPS))) {
 			return;
 		}
 

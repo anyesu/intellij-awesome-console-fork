@@ -606,10 +606,11 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			if (isSurroundedBy(match, new String[]{"()", "[]", "''"}, offsets)) {
 				match = match.substring(offsets[0], match.length() - offsets[1]);
 			}
+			int[] groupRange = RegexUtils.tryGetGroupRange(fileMatcher, "link");
 			results.add(new FileLinkMatch(
 					match, decodeDwc(path),
-					fileMatcher.start() + offsets[0],
-					fileMatcher.end() - offsets[1],
+					groupRange[0] + offsets[0],
+					groupRange[1] - offsets[1],
 					row, col
 			));
 		}

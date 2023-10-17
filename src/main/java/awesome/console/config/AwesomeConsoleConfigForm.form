@@ -121,13 +121,10 @@
               </component>
             </children>
           </scrollpane>
-          <component id="a0bee" class="javax.swing.JLabel">
+          <component id="a0bee" class="javax.swing.JLabel" binding="filePatternLabel" custom-create="true">
             <constraints>
               <grid row="6" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties>
-              <text value="      * Required regex group names: link, path, row, col, where `path1` to `path5` all correspond to the group `path`."/>
-            </properties>
           </component>
           <component id="7f5a7" class="javax.swing.JCheckBox" binding="ignorePatternCheckBox" custom-create="true" default-binding="true">
             <constraints>

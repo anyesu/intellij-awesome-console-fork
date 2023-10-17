@@ -1,5 +1,6 @@
 package awesome.console.config;
 
+import com.intellij.openapi.util.text.StringUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JCheckBox searchForClassesCheckBox;
 	public JCheckBox filePatternCheckBox;
 	public JTextArea filePatternTextArea;
+	public JLabel filePatternLabel;
 	public JCheckBox ignorePatternCheckBox;
 	public JTextField ignorePatternTextField;
 	public JCheckBox fixChooseTargetFileCheckBox;
@@ -183,6 +185,12 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		filePatternCheckBox.setToolTipText("Check this to custom File Pattern. (experimental)");
 		filePatternTextArea = initTextArea(DEFAULT_FILE_PATTERN_TEXT);
 		filePatternTextArea.setLineWrap(true);
+		final String groupExample = FILE_PATTERN_REQUIRED_GROUPS[0];
+		filePatternLabel = new JLabel(String.format(
+				"      * Required regex group names: [%s], where %s,%s1...%s%d all correspond to the group %s.",
+				StringUtil.join(FILE_PATTERN_REQUIRED_GROUPS, ", "),
+				groupExample, groupExample, groupExample, DEFAULT_GROUP_RETRIES, groupExample
+		));
 
 		bindCheckBoxAndComponents(searchForFilesCheckBox, searchForClassesCheckBox, filePatternCheckBox);
 	}

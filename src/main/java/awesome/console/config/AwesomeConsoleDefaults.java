@@ -8,6 +8,10 @@ import java.util.regex.Pattern;
  */
 public interface AwesomeConsoleDefaults {
 
+    int DEFAULT_GROUP_RETRIES = 5;
+
+    String[] FILE_PATTERN_REQUIRED_GROUPS = "link,path,row,col".split(",");
+
     boolean DEFAULT_DEBUG_MODE = false;
 
     boolean DEFAULT_SPLIT_ON_LIMIT = false;
