@@ -321,6 +321,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 					// Don't use parallelStream because `shouldIgnore` uses ThreadLocal
 					matchingFiles = matchingFiles.stream()
 												 .filter(f -> !shouldIgnore(getRelativePath(f.getPath())))
+												 .limit(config.useResultLimit ? config.getResultLimit() : matchingFiles.size())
 												 .collect(Collectors.toList());
 				}
 			} finally {

@@ -1,10 +1,11 @@
 package awesome.console.config;
 
 import com.intellij.openapi.util.text.StringUtil;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.NumberFormatter;
@@ -14,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("SameParameterValue")
 public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JPanel mainpanel;
 	public JCheckBox debugModeCheckBox;
@@ -23,6 +25,8 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JCheckBox searchForURLsCheckBox;
 	public JCheckBox searchForFilesCheckBox;
 	public JCheckBox searchForClassesCheckBox;
+	public JCheckBox limitResultCheckBox;
+	public JSpinner limitResultSpinner;
 	public JCheckBox filePatternCheckBox;
 	public JTextArea filePatternTextArea;
 	public JLabel filePatternLabel;
@@ -33,10 +37,12 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JTextField fileTypesTextField;
 	public JCheckBox resolveSymlinkCheckBox;
 
-	private Map<JCheckBox, List<JComponent>> bindMap;
+	private Map<JCheckBox, Set<JComponent>> bindMap;
+	private Map<JComponent, Set<JCheckBox>> bindMap2;
 
 	private void createUIComponents() {
 		bindMap = new HashMap<>();
+		bindMap2 = new HashMap<>();
 		setupDebugMode();
 		setupLineLimit();
 		setupSplitLineIntoChunk();
@@ -65,19 +71,35 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	}
 
 	private void bindCheckBoxAndComponents(@NotNull JCheckBox checkBox, @NotNull JComponent... components) {
-		bindMap.computeIfAbsent(checkBox, __ -> new ArrayList<>()).addAll(List.of(components));
+		if (components.length > 0) {
+			Stream.of(components).forEach(it -> bind(checkBox, it));
+		}
+	}
+
+	private void bindComponentToCheckBoxes(@NotNull JComponent component, @NotNull JCheckBox... checkBoxes) {
+		if (checkBoxes.length > 0) {
+			Stream.of(checkBoxes).forEach(it -> bind(it, component));
+		}
+	}
+
+	private void bind(@NotNull JCheckBox checkBox, @NotNull JComponent component) {
+		getBindings(checkBox).add(component);
+		getBindings(component).add(checkBox);
+	}
+
+	private Set<JComponent> getBindings(@NotNull JCheckBox checkBox) {
+		return bindMap.computeIfAbsent(checkBox, __ -> new HashSet<>());
+	}
+
+	private Set<JCheckBox> getBindings(@NotNull JComponent component) {
+		return bindMap2.computeIfAbsent(component, __ -> new HashSet<>());
 	}
 
 	private void onCheckBoxChange(@NotNull JCheckBox checkBox) {
-		boolean enabled = checkBox.isSelected();
-		List<JComponent> components = bindMap.computeIfAbsent(checkBox, __ -> new ArrayList<>());
-		for (JComponent component : components) {
+		getBindings(checkBox).forEach(component -> {
+			final boolean enabled = getBindings(component).stream().allMatch(JCheckBox::isSelected);
 			setComponentEnabled(component, enabled);
-		}
-		if (checkBox == searchForFilesCheckBox || checkBox == filePatternCheckBox) {
-			enabled = searchForFilesCheckBox.isSelected() && filePatternCheckBox.isSelected();
-			setComponentEnabled(filePatternTextArea, enabled);
-		}
+		});
 	}
 
 	private void setComponentEnabled(@NotNull JComponent component, boolean enabled) {
@@ -114,6 +136,12 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		final JTextArea textArea = new JTextArea();
 		setupRestoreText(textArea, defaultText);
 		return textArea;
+	}
+
+	private JSpinner initSpinner(int defaultValue) {
+		final JSpinner spinner = new JSpinner();
+		setupRestore(spinner, e -> spinner.setValue(defaultValue));
+		return spinner;
 	}
 
 	private void setupDebugMode() {
@@ -183,6 +211,10 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		searchForClassesCheckBox = initCheckBox(DEFAULT_SEARCH_CLASSES);
 		searchForClassesCheckBox.setToolTipText("Uncheck if you do not want classes parsed from the console.");
 
+		limitResultCheckBox = initCheckBox(DEFAULT_USE_RESULT_LIMIT);
+		limitResultSpinner = initSpinner(DEFAULT_RESULT_LIMIT);
+		limitResultSpinner.setModel(new SpinnerNumberModel(DEFAULT_RESULT_LIMIT, DEFAULT_MIN_RESULT_LIMIT, Integer.MAX_VALUE, 10));
+
 		filePatternCheckBox = initCheckBox(DEFAULT_USE_FILE_PATTERN);
 		filePatternCheckBox.setToolTipText("Check this to custom File Pattern. (experimental)");
 		filePatternTextArea = initTextArea(DEFAULT_FILE_PATTERN_TEXT);
@@ -194,13 +226,20 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 				groupExample, groupExample, groupExample, DEFAULT_GROUP_RETRIES, groupExample
 		));
 
-		bindCheckBoxAndComponents(searchForFilesCheckBox, searchForClassesCheckBox, filePatternCheckBox);
+		bindCheckBoxAndComponents(searchForFilesCheckBox, searchForClassesCheckBox, limitResultCheckBox, filePatternCheckBox);
+		bindComponentToCheckBoxes(limitResultSpinner, searchForFilesCheckBox, limitResultCheckBox);
+		bindComponentToCheckBoxes(filePatternTextArea, searchForFilesCheckBox, filePatternCheckBox);
 	}
 
 	public void initMatchFiles(boolean enableFiles, boolean enableClasses, boolean enableFilePattern, String filePattern) {
 		setupCheckBox(searchForFilesCheckBox, enableFiles);
 		setupCheckBox(searchForClassesCheckBox, enableClasses);
 		setupCheckBoxAndText(filePatternCheckBox, enableFilePattern, filePatternTextArea, filePattern);
+	}
+
+	public void initLimitResult(boolean enabled, int value) {
+		setupCheckBox(limitResultCheckBox, enabled);
+		limitResultSpinner.setValue(value);
 	}
 
 	private void setupIgnorePattern() {

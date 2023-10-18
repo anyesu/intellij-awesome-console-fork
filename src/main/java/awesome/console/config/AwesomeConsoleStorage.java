@@ -39,6 +39,8 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
 
     public volatile boolean searchClasses = DEFAULT_SEARCH_CLASSES;
 
+    public volatile boolean useResultLimit = DEFAULT_USE_RESULT_LIMIT;
+
     public volatile boolean useFilePattern = DEFAULT_USE_FILE_PATTERN;
 
     @NotNull
@@ -60,6 +62,8 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     public volatile Set<String> fileTypeSet = Collections.emptySet();
 
     public volatile boolean resolveSymlink = DEFAULT_RESOLVE_SYMLINK;
+
+    private volatile int resultLimit = DEFAULT_RESULT_LIMIT;
 
     private volatile String filePatternText = DEFAULT_FILE_PATTERN_TEXT;
 
@@ -87,6 +91,17 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     @Override
     public void loadState(@NotNull AwesomeConsoleStorage state) {
         XmlSerializerUtil.copyBean(state, this);
+    }
+
+    public int getResultLimit() {
+        if (resultLimit < DEFAULT_MIN_RESULT_LIMIT) {
+            resultLimit = DEFAULT_MIN_RESULT_LIMIT;
+        }
+        return resultLimit;
+    }
+
+    public void setResultLimit(int resultLimit) {
+        this.resultLimit = resultLimit;
     }
 
     public String getFilePatternText() {

@@ -26,6 +26,12 @@ public interface AwesomeConsoleDefaults {
 
     boolean DEFAULT_SEARCH_CLASSES = true;
 
+    boolean DEFAULT_USE_RESULT_LIMIT = true;
+
+    int DEFAULT_RESULT_LIMIT = 100;
+
+    int DEFAULT_MIN_RESULT_LIMIT = 1;
+
     boolean DEFAULT_USE_FILE_PATTERN = false;
 
     Pattern DEFAULT_FILE_PATTERN = AwesomeLinkFilter.FILE_PATTERN;
