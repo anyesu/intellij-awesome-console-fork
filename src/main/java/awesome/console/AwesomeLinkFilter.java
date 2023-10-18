@@ -18,6 +18,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -29,7 +30,8 @@ import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent;
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent;
 import com.intellij.util.PathUtil;
 import com.intellij.util.messages.MessageBusConnection;
-import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -247,11 +249,12 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		if (FileUtils.isUncPath(path)) {
 			return null;
 		}
-		String basePath = isAbsolutePath(path) ? null : project.getBasePath();
+		String basePath = StringUtil.defaultIfEmpty(isAbsolutePath(path) ? null : project.getBasePath(), "");
 		try {
-			// if basePath is null, path is assumed to be absolute.
-			return new File(new File(basePath, path).getCanonicalPath());
-		} catch (IOException e) {
+			// if basePath is empty, path is assumed to be absolute.
+			// resolve "." and ".." in the path, but the symbolic links are followed
+			return new File(Paths.get(basePath, path).normalize().toString());
+		} catch (InvalidPathException e) {
 			logger.error(String.format("Unable to resolve file path: \"%s\" with basePath \"%s\"", path, basePath));
 			logger.error(e);
 			return null;
@@ -286,7 +289,10 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				final boolean exists = file.exists();
 				String filePath = file.getAbsolutePath();
 				if (exists) {
-					final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(project, filePath, match.linkedRow, match.linkedCol);
+					final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(
+							project, FileUtils.resolveSymlink(filePath, config.resolveSymlink),
+							match.linkedRow, match.linkedCol
+					);
 					results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
 					continue;
 				} else if (isExternal) {
@@ -331,7 +337,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			}
 
 			final HyperlinkInfo linkInfo = HyperlinkUtils.createMultipleFilesHyperlinkInfo(
-					matchingFiles,
+					FileUtils.resolveSymlinks(matchingFiles, config.resolveSymlink),
 					match.linkedRow, match.linkedCol,
 					project, config.fixChooseTargetFile
 			);

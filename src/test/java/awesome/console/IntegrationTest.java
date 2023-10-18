@@ -106,5 +106,8 @@ public class IntegrationTest {
 		System.out.println("Ignore matches: ./ . .. ... ./ ../ ././../. / // /// \\ \\\\ \\\\\\");
 
 		System.out.println("Non-indexed files in the project: build/patchedPluginXmlFiles/plugin.xml is not plugin.xml");
+
+		System.out.println("Just a symlink: src/test/resources/symlink/file1.java");
+		System.out.println("Just a symlink: src/test/resources/symlink/file1.java:10:6");
 	}
 }

@@ -57,6 +57,8 @@ public class AwesomeConsoleConfig implements Configurable {
 		form.fixChooseTargetFileCheckBox.setSelected(storage.fixChooseTargetFile);
 
 		form.initFileTypes(storage.useFileTypes, storage.getFileTypes());
+
+		form.resolveSymlinkCheckBox.setSelected(storage.resolveSymlink);
 	}
 
 	private void showErrorDialog() {
@@ -152,6 +154,7 @@ public class AwesomeConsoleConfig implements Configurable {
 				|| form.fixChooseTargetFileCheckBox.isSelected() != storage.fixChooseTargetFile
 				|| form.fileTypesCheckBox.isSelected() != storage.useFileTypes
 				|| !form.fileTypesTextField.getText().trim().equals(storage.getFileTypes())
+				|| form.resolveSymlinkCheckBox.isSelected() != storage.resolveSymlink
 				;
 	}
 
@@ -212,6 +215,8 @@ public class AwesomeConsoleConfig implements Configurable {
 		storage.useFileTypes = form.fileTypesCheckBox.isSelected();
 		storage.setFileTypes(form.fileTypesTextField.getText().trim());
 		form.fileTypesTextField.setText(storage.getFileTypes());
+
+		storage.resolveSymlink = form.resolveSymlinkCheckBox.isSelected();
 	}
 
 	@Override

@@ -31,6 +31,7 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 	public JCheckBox fixChooseTargetFileCheckBox;
 	public JCheckBox fileTypesCheckBox;
 	public JTextField fileTypesTextField;
+	public JCheckBox resolveSymlinkCheckBox;
 
 	private Map<JCheckBox, List<JComponent>> bindMap;
 
@@ -44,6 +45,7 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 		setupIgnorePattern();
 		setupFixChooseTargetFileCheckBox();
 		setupFileTypes();
+		setupResolveSymlink();
 	}
 
 	private void setupRestore(@NotNull JComponent component, ActionListener listener) {
@@ -226,5 +228,10 @@ public class AwesomeConsoleConfigForm implements AwesomeConsoleDefaults {
 
 	public void initFileTypes(boolean enabled, String text) {
 		setupCheckBoxAndText(fileTypesCheckBox, enabled, fileTypesTextField, text);
+	}
+
+	private void setupResolveSymlink() {
+		resolveSymlinkCheckBox = initCheckBox(DEFAULT_RESOLVE_SYMLINK);
+		resolveSymlinkCheckBox.setToolTipText("Check this to resolve symlinks. (experimental)");
 	}
 }

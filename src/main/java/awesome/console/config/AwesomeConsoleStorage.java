@@ -59,6 +59,8 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     @Transient
     public volatile Set<String> fileTypeSet = Collections.emptySet();
 
+    public volatile boolean resolveSymlink = DEFAULT_RESOLVE_SYMLINK;
+
     private volatile String filePatternText = DEFAULT_FILE_PATTERN_TEXT;
 
     private volatile String ignorePatternText = DEFAULT_IGNORE_PATTERN_TEXT;

@@ -46,4 +46,6 @@ public interface AwesomeConsoleDefaults {
     boolean DEFAULT_USE_FILE_TYPES = true;
 
     String DEFAULT_FILE_TYPES = "bmp,gif,jpeg,jpg,png,webp,ttf";
+
+    boolean DEFAULT_RESOLVE_SYMLINK = false;
 }
