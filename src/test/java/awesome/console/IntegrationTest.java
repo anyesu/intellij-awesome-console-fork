@@ -109,5 +109,10 @@ public class IntegrationTest {
 
 		System.out.println("Just a symlink: src/test/resources/symlink/file1.java");
 		System.out.println("Just a symlink: src/test/resources/symlink/file1.java:10:6");
+
+		System.out.println("Illegal char: \u0001file1.java");
+		System.out.println("Illegal char: \u001ffile1.java");
+		System.out.println("Illegal char: \u0021file1.java");
+		System.out.println("Illegal char: \u007ffile1.java");
 	}
 }

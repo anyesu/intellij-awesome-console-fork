@@ -56,7 +56,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public static final String REGEX_SEPARATOR = "[\\\\/]+";
 
-	public static final String REGEX_CHAR = "[^\\\\/:*?\"<>|\\s]";
+	public static final String REGEX_CHAR = "[^\\\\/:*?\"<>|\\s\\x00-\\x1F\\x7F]";
 
 	public static final String REGEX_DRIVE = "(?:~|[a-zA-Z]:)?" + REGEX_SEPARATOR;
 

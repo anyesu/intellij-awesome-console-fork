@@ -344,6 +344,14 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		}
 	}
 
+	@Test
+	public void testIllegalChar() {
+		assertPathDetection("Illegal char: \u0001file1.java", "file1.java");
+		assertPathDetection("Illegal char: \u001ffile1.java", "file1.java");
+		assertPathDetection("Illegal char: \u0021file1.java", "!file1.java");
+		assertPathDetection("Illegal char: \u007ffile1.java", "file1.java");
+	}
+
 	private void assertPathDetection(final String line, final String expected, final String... more) {
 		assertPathDetection(line, expected, -1, -1);
 		for (String item : more) {
