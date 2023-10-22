@@ -113,6 +113,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	private volatile boolean cacheInitialized = false;
 
+	public final ThreadLocal<Boolean> isTerminal = ThreadLocal.withInitial(() -> false);
+
 	public AwesomeLinkFilter(final Project project) {
 		this.project = project;
 		this.fileCache = new ConcurrentHashMap<>();
