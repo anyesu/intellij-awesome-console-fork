@@ -53,7 +53,7 @@ public class AwesomeConsoleConfig implements Configurable {
 		form.maxLengthTextField.setEnabled(storage.LIMIT_LINE_LENGTH);
 		form.maxLengthTextField.setEditable(storage.LIMIT_LINE_LENGTH);
 
-		form.initIgnorePattern(storage.useIgnorePattern, storage.getIgnorePatternText());
+		form.initIgnorePattern(storage.useIgnorePattern, storage.getIgnorePatternText(), storage.useIgnoreStyle);
 
 		form.fixChooseTargetFileCheckBox.setSelected(storage.fixChooseTargetFile);
 
@@ -154,6 +154,7 @@ public class AwesomeConsoleConfig implements Configurable {
 				|| !form.filePatternTextArea.getText().trim().equals(storage.getFilePatternText())
 				|| form.ignorePatternCheckBox.isSelected() != storage.useIgnorePattern
 				|| !form.ignorePatternTextField.getText().trim().equals(storage.getIgnorePatternText())
+				|| form.ignoreStyleCheckBox.isSelected() != storage.useIgnoreStyle
 				|| form.fixChooseTargetFileCheckBox.isSelected() != storage.fixChooseTargetFile
 				|| form.fileTypesCheckBox.isSelected() != storage.useFileTypes
 				|| !form.fileTypesTextField.getText().trim().equals(storage.getFileTypes())
@@ -215,6 +216,7 @@ public class AwesomeConsoleConfig implements Configurable {
 		storage.useIgnorePattern = useIgnorePattern;
 		storage.setIgnorePatternText(ignorePatternText);
 		form.ignorePatternTextField.setText(ignorePatternText);
+		storage.useIgnoreStyle = form.ignoreStyleCheckBox.isSelected();
 
 		storage.fixChooseTargetFile = form.fixChooseTargetFileCheckBox.isSelected();
 

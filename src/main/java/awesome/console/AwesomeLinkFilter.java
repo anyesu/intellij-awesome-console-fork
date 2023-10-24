@@ -14,6 +14,7 @@ import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.ide.browsers.OpenUrlHyperlinkInfo;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -281,6 +282,18 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 		for(final FileLinkMatch match: matches) {
 			if (shouldIgnore(match.match)) {
+				// TODO This feature is not supported in the Terminal because JediTerm does not use the highlightAttributes parameter.
+				//     ref: https://github.com/JetBrains/jediterm/blob/78b143010fc53456f2d16eb67572ed23b4a99543/core/src/com/jediterm/terminal/model/hyperlinks/TextProcessing.java#L67-L68
+				if (config.useIgnoreStyle && Boolean.FALSE.equals(isTerminal.get())) {
+					// a meaningless hyperlink that serves only as a placeholder so that
+					// other filters can no longer generate incorrect hyperlinks.
+					HyperlinkInfo linkInfo = __ -> {};
+					TextAttributes attributes = HyperlinkUtils.createIgnoreStyle();
+					results.add(new Result(
+							startPoint + match.start, startPoint + match.end,
+							linkInfo, attributes, attributes
+					));
+				}
 				continue;
 			}
 

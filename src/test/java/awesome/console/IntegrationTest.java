@@ -114,5 +114,7 @@ public class IntegrationTest {
 		System.out.println("Illegal char: \u001ffile1.java");
 		System.out.println("Illegal char: \u0021file1.java");
 		System.out.println("Illegal char: \u007ffile1.java");
+
+		System.out.println("Use ignore style to prevent this(from vite-plugin-compression) to be highlighted: 291.23kb / gzip: 44.09kb");
 	}
 }

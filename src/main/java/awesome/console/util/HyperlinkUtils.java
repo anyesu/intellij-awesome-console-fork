@@ -6,6 +6,10 @@ import com.intellij.execution.filters.HyperlinkInfoBase;
 import com.intellij.execution.filters.HyperlinkInfoFactory;
 import com.intellij.execution.filters.LazyFileHyperlinkInfo;
 import com.intellij.openapi.editor.LogicalPosition;
+import com.intellij.openapi.editor.colors.CodeInsightColors;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
@@ -84,5 +88,15 @@ public class HyperlinkUtils {
             return new MultipleFilesHyperlinkInfoWrapper((HyperlinkInfoBase) linkInfo);
         }
         return linkInfo;
+    }
+
+    public static TextAttributes createIgnoreStyle() {
+        try {
+            TextAttributes attr = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(CodeInsightColors.INACTIVE_HYPERLINK_ATTRIBUTES).clone();
+            attr.setEffectType(EffectType.SEARCH_MATCH);
+            return attr;
+        } catch (Throwable e) {
+            return null;
+        }
     }
 }

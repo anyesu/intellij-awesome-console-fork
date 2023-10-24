@@ -53,6 +53,8 @@ public class AwesomeConsoleStorage implements PersistentStateComponent<AwesomeCo
     @Transient
     public volatile Pattern ignorePattern = DEFAULT_IGNORE_PATTERN;
 
+    public volatile boolean useIgnoreStyle = DEFAULT_USE_IGNORE_STYLE;
+
     public volatile boolean fixChooseTargetFile = DEFAULT_FIX_CHOOSE_TARGET_FILE;
 
     public volatile boolean useFileTypes = DEFAULT_USE_FILE_TYPES;

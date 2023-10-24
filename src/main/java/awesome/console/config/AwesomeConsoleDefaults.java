@@ -47,6 +47,8 @@ public interface AwesomeConsoleDefaults {
             Pattern.UNICODE_CHARACTER_CLASS
     );
 
+    boolean DEFAULT_USE_IGNORE_STYLE = false;
+
     boolean DEFAULT_FIX_CHOOSE_TARGET_FILE = true;
 
     boolean DEFAULT_USE_FILE_TYPES = true;
