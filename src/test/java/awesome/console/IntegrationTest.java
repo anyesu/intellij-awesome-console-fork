@@ -116,5 +116,12 @@ public class IntegrationTest {
 		System.out.println("Illegal char: \u007ffile1.java");
 
 		System.out.println("Use ignore style to prevent this(from vite-plugin-compression) to be highlighted: 291.23kb / gzip: 44.09kb");
+		
+		System.out.println("╭─[C:\\integration\\file1.java:19:2]");
+		System.out.println("╭─[C:\\integration\\file1.java:19]");
+		System.out.println("╭─ C:\\integration\\file1.java:19:3");
+		System.out.println("--> [C:\\integration\\file1.java:19:4]");
+		System.out.println("--> C:\\integration\\file1.java:19:5");
+		System.out.println("WARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/C:/integration/file1.java) to field java.io.DeleteOnExitHook.files");
 	}
 }

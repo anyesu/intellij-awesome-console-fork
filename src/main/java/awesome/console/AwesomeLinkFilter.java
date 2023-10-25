@@ -63,17 +63,17 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
-	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|[,;][a-zA-Z]:)(?:%s))+(?<![,;()\\]'])", REGEX_CHAR);
+	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|(?<![a-zA-Z])[a-zA-Z]:[\\\\/]+)(?:%s))+(?<![,;()\\]'])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
 	public static final String REGEX_PATH_WITH_SPACE = String.format(
-			"\"(?<path1>(?<protocol1>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))\"",
+			"\"(?<path1>(?<protocol1>%s)?(%s)?((%s|%s)+))\"",
 			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME_WITH_SPACE, REGEX_SEPARATOR
 	);
 
 	public static final String REGEX_PATH = String.format(
-			"(?<path2>(?<protocol2>%s)?(%s)?(((?![a-zA-Z]:)%s|%s)+))",
+			"(?<path2>(?<protocol2>%s)?(%s)?((%s|%s)+))",
 			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR
 	);
 
