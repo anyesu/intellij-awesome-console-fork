@@ -190,7 +190,7 @@
               <text value="Use regex pattern"/>
             </properties>
           </component>
-          <component id="6ef35" class="javax.swing.JCheckBox" binding="ignoreStyleCheckBox" custom-create="true" default-binding="true">
+          <component id="e6a87" class="javax.swing.JCheckBox" binding="ignoreStyleCheckBox" custom-create="true" default-binding="true">
             <constraints>
               <grid row="9" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
