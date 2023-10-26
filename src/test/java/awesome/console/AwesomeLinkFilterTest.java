@@ -3,7 +3,10 @@ package awesome.console;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.List;
@@ -352,33 +355,34 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Illegal char: \u007ffile1.java", "file1.java");
 	}
 
-	private void assertPathDetection(final String line, final String expected, final String... more) {
-		assertPathDetection(line, expected, -1, -1);
-		for (String item : more) {
-			assertPathDetection(line, item, -1, -1);
-		}
-	}
-
-	private void assertPathDetection(final String line, final String expected, final int expectedRow) {
-		assertPathDetection(line, expected, expectedRow, -1);
-	}
-
-	private void assertPathDetection(final String line, final String expected, final int expectedRow, final int expectedCol) {
+	private List<FileLinkMatch> assertPathDetection(@NotNull final String line, @NotNull final String... expected) {
 		AwesomeLinkFilter filter = new AwesomeLinkFilter(getProject());
 
 		// Test only detecting file paths - no file existence check
 		List<FileLinkMatch> results = filter.detectPaths(line);
-		results = results.stream().filter(i -> expected.equals(i.match)).collect(Collectors.toList());
 
-		assertEquals("No matches in line \"" + line + "\"", 1, results.size());
-		FileLinkMatch info = results.get(0);
-		assertEquals(String.format("Expected filter to detect \"%s\" link in \"%s\"", expected, line), expected, info.match);
+		assertFalse("No matches in line \"" + line + "\"", results.isEmpty());
 
-		if (expectedRow >= 0)
+		Set<String> expectedSet = Stream.of(expected).collect(Collectors.toSet());
+		assertContainsElements(results.stream().map(it -> it.match).collect(Collectors.toList()), expectedSet);
+
+		return results.stream().filter(i -> expectedSet.contains(i.match)).collect(Collectors.toList());
+	}
+
+	private void assertPathDetection(@NotNull final String line, @NotNull final String expected, final int expectedRow) {
+		assertPathDetection(line, expected, expectedRow, -1);
+	}
+
+	private void assertPathDetection(@NotNull final String line, @NotNull final String expected, final int expectedRow, final int expectedCol) {
+		FileLinkMatch info = assertPathDetection(line, expected).get(0);
+
+		if (expectedRow >= 0) {
 			assertEquals("Expected to capture row number", expectedRow, info.linkedRow);
+		}
 
-		if (expectedCol >= 0)
+		if (expectedCol >= 0) {
 			assertEquals("Expected to capture column number", expectedCol, info.linkedCol);
+		}
 	}
 
 
