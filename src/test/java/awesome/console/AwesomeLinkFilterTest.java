@@ -355,6 +355,14 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Illegal char: \u007ffile1.java", "file1.java");
 	}
 
+	@Test
+	public void testWindowsDriveRoot() {
+		assertPathDetection("Windows drive root: C:\\", "C:\\");
+		assertPathDetection("Windows drive root: C:/", "C:/");
+		assertPathDetection("Windows drive root: C:\\\\", "C:\\\\");
+		assertPathDetection("Windows drive root: C:\\/", "C:\\/");
+	}
+
 	private List<FileLinkMatch> assertPathDetection(@NotNull final String line, @NotNull final String... expected) {
 		AwesomeLinkFilter filter = new AwesomeLinkFilter(getProject());
 

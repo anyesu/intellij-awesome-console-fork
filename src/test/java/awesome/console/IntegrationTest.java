@@ -33,7 +33,8 @@ public class IntegrationTest {
 		System.out.println("C:\\Windows/Temp");
 		System.out.println("C:/Windows/Temp");
 		System.out.println("C:\\\\");
-		System.out.println("C:\\      (by GenericFileFilter)");
+		System.out.println("C:\\");
+		System.out.println("C:/");
 		System.out.println("C:");
 		System.out.println("omfg something: file://C:/Windows yay");
 		System.out.println("[DEBUG] src/test/resources/file1.java:[4,4] cannot find symbol");

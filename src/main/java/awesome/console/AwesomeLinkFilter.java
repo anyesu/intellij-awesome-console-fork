@@ -59,7 +59,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public static final String REGEX_CHAR = "[^\\\\/:*?\"<>|\\s\\x00-\\x1F\\x7F]";
 
-	public static final String REGEX_DRIVE = "(?:~|[a-zA-Z]:)?" + REGEX_SEPARATOR;
+	public static final String REGEX_DRIVE = String.format("(?:~|[a-zA-Z]:)(?=%s)", REGEX_SEPARATOR);
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
@@ -227,6 +227,9 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	}
 
 	private boolean isAbsolutePath(@NotNull final String path) {
+		if (FileUtils.isUnixAbsolutePath(path)) {
+			return true;
+		}
 		final Matcher driveMatcher = this.driveMatcher.get();
 		return driveMatcher.reset(path).find();
 	}
@@ -311,7 +314,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 					results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
 					continue;
 				} else if (isExternal) {
-					if (!matchPath.startsWith("/") && !matchPath.startsWith("\\")) {
+					if (!FileUtils.isUnixAbsolutePath(matchPath)) {
 						continue;
 					}
 					// Resolve absolute paths starting with a slash into relative paths based on the project root as a fallback

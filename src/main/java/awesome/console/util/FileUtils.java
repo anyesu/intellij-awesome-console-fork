@@ -14,6 +14,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public class FileUtils {
 
+    public static boolean isUnixAbsolutePath(@NotNull String path) {
+        return path.startsWith("/") || path.startsWith("\\");
+    }
+
     public static boolean isUncPath(@NotNull String path) {
         return SystemUtils.isWindows() &&
                 (path.startsWith("//") || path.startsWith("\\\\"));
