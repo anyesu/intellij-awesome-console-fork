@@ -308,8 +308,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				String filePath = file.getAbsolutePath();
 				if (exists) {
 					final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(
-							project, FileUtils.resolveSymlink(filePath, config.resolveSymlink),
-							match.linkedRow, match.linkedCol
+							project, filePath, match.linkedRow, match.linkedCol
 					);
 					results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
 					continue;
@@ -355,10 +354,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				matchingFiles = bestMatchingFiles;
 			}
 
-			final HyperlinkInfo linkInfo = HyperlinkUtils.createMultipleFilesHyperlinkInfo(
-					FileUtils.resolveSymlinks(matchingFiles, config.resolveSymlink),
-					match.linkedRow, match.linkedCol,
-					project, config.fixChooseTargetFile
+			final HyperlinkInfo linkInfo = HyperlinkUtils.buildMultipleFilesHyperlinkInfo(
+					project, matchingFiles, match.linkedRow, match.linkedCol
 			);
 
 			results.add(new Result(

@@ -1,5 +1,6 @@
 package awesome.console.util;
 
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.File;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author anyesu
@@ -35,6 +37,11 @@ public class FileUtils {
         // which takes a long time and causes the UI to freeze.
         // ref: https://stackoverflow.com/a/48554407
         return !isUncPath(path) && new File(path).exists();
+    }
+
+    @Nullable
+    public static VirtualFile findFileByPath(@NotNull String path) {
+        return LocalFileSystem.getInstance().refreshAndFindFileByPath(path);
     }
 
     public static String resolveSymlink(@NotNull final String filePath, final boolean resolveSymlink) {
