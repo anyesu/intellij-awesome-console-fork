@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.zeroturnaround:gradle-jrebel-plugin:1.2.0"
+    }
+}
+
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '1.5.2'
@@ -23,4 +34,24 @@ intellij {
 
 patchPluginXml {
     untilBuild = ""
+}
+
+if (Boolean.getBoolean("enableJRebel")) {
+    plugins.apply 'org.zeroturnaround.gradle.jrebel'
+
+    // ref: https://manuals.jrebel.com/jrebel/standalone/gradle-advanced.html
+    rebel {
+        classpath {
+            // don't add the default classes target directory [main]
+            omitDefaultClassesDir = true
+
+            resource {
+                // the real classes target directory is [main-instrumented]
+                directory = "build/classes/java/main-instrumented"
+            }
+        }
+    }
+
+    // ref: https://manuals.jrebel.com/jrebel/standalone/gradle-advanced.html#duplicate-rebel-xml-since-gradle-7-x
+    processResources.duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
