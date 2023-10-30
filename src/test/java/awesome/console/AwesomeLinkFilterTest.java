@@ -348,6 +348,20 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	@Test
+	public void testPathBoundary() {
+		assertPathDetection("warning: LF will be replaced by CRLF in README.md.", "README.md");
+		assertPathDetection("error TS18003: No inputs were found in config file 'tsconfig.json'.", "tsconfig.json");
+
+		assertPathDetection(".", ".");
+		assertPathDetection("..", "..");
+		assertPathDetection("Path end with a dot: file1.java.", "file1.java");
+		assertPathDetection("Path end with a dot: \"file1.java\".", "\"file1.java\"");
+		assertPathDetection("Path end with a dot: src/test/resources/subdir/.", "src/test/resources/subdir/.");
+		assertPathDetection("Path end with a dot: src/test/resources/subdir/..", "src/test/resources/subdir/..");
+		assertPathDetection("Path end with a dot: src/test/resources/subdir...", "src/test/resources/subdir");
+	}
+
+	@Test
 	public void testIllegalChar() {
 		assertPathDetection("Illegal char: \u0001file1.java", "file1.java");
 		assertPathDetection("Illegal char: \u001ffile1.java", "file1.java");

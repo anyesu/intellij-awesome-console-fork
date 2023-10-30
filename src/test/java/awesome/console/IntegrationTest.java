@@ -124,5 +124,15 @@ public class IntegrationTest {
 		System.out.println("--> [C:\\integration\\file1.java:19:5]");
 		System.out.println("--> C:\\integration\\file1.java:19:3");
 		System.out.println("\u001b[31mWARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/C:/integration/file1.java) to field java.io.DeleteOnExitHook.files\u001b[0m");
+
+		System.out.println("git console log: \u001b[31mwarning: LF will be replaced by CRLF in README.md.\u001b[0m");
+		System.out.println("\u001b[31merror\u001b[0m \u001b[37mTS18003\u001b[0m: No inputs were found in config file 'tsconfig.json'. ");
+		System.out.println(".");
+		System.out.println("..");
+		System.out.println("Path end with a dot: file1.java.");
+		System.out.println("Path end with a dot: \"file1.java\".");
+		System.out.println("Path end with a dot: src/test/resources/subdir/.");
+		System.out.println("Path end with a dot: src/test/resources/subdir/..");
+		System.out.println("Path end with a dot: src/test/resources/subdir...");
 	}
 }

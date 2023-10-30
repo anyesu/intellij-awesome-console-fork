@@ -63,7 +63,9 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
 
-	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|(?<![a-zA-Z])[a-zA-Z]:[\\\\/]+)(?:%s))+(?<![,;()\\]'])", REGEX_CHAR);
+	public static final String REGEX_DOTS_PATH = "(?<=^|[\\s\\\\/])\\.+";
+
+	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|(?<![a-zA-Z])[a-zA-Z]:[\\\\/]+)(?:%s))+(?<![,;()\\]'\\.])", REGEX_CHAR);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
@@ -73,8 +75,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	);
 
 	public static final String REGEX_PATH = String.format(
-			"(?<path2>(?<protocol2>%s)?(%s)?((%s|%s)+))",
-			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_FILE_NAME, REGEX_SEPARATOR
+			"(?<path2>(?<protocol2>%s)?(%s)?((%s|(?:%s|%s))+))",
+			REGEX_PROTOCOL, REGEX_DRIVE, REGEX_SEPARATOR, REGEX_FILE_NAME, REGEX_DOTS_PATH
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
