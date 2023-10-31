@@ -53,7 +53,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	// JediTerm Unicode private use area U+100000–U+10FFFD
 	public static final String DWC = "\uE000"; // Second part of double-width character
 
-	public static final String REGEX_ROW_COL = "(?i:\\s*(?:[:,]\\s*line|:\\s*\\[?|(?=\\(\\s*\\d+\\s*[:,]\\s*\\d+\\s*\\))\\()\\s*(?<row>\\d+)(?:\\s*[:,](?:\\s*col(?:umn)?)?\\s*(?<col>\\d+)(?:\\s*[)\\]])?)?)?";
+	public static final String REGEX_ROW_COL = "(?i:\\s*(?:[:,]\\s*line|'\\s*line:|:\\s*\\[?|(?=\\(\\s*\\d+\\s*[:,]\\s*\\d+\\s*\\))\\()\\s*(?<row>\\d+)(?:\\s*[:,](?:\\s*col(?:umn)?)?\\s*(?<col>\\d+)(?:\\s*[)\\]])?)?)?";
 
 	public static final String REGEX_SEPARATOR = "[\\\\/]+";
 
@@ -583,9 +583,18 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			final String start = String.valueOf(pair.charAt(0));
 			final String end = String.valueOf(pair.charAt(1));
 			if (s.startsWith(start)) {
-				offsets[0] = 1;
-				offsets[1] = s.endsWith(end) ? 1 : 0;
-				return true;
+				if (s.endsWith(end)) {
+					offsets[0] = 1;
+					offsets[1] = 1;
+					return true;
+				} else if (s.lastIndexOf(end + " ") <= 0) {
+					offsets[0] = 1;
+					offsets[1] = 0;
+					return true;
+				}
+				// `row:col` is outside the bounds
+				// e.g. file 'build.gradle' line: 14
+				return false;
 			} else if (s.endsWith(end) && !s.substring(0, s.length() - 1).contains(start)) {
 				offsets[0] = 0;
 				offsets[1] = 1;

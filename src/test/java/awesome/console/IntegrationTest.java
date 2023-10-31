@@ -134,5 +134,7 @@ public class IntegrationTest {
 		System.out.println("Path end with a dot: src/test/resources/subdir/.");
 		System.out.println("Path end with a dot: src/test/resources/subdir/..");
 		System.out.println("Path end with a dot: src/test/resources/subdir...");
+
+		System.out.println("Gradle build task failed with an exception: Build file 'build.gradle' line: 14");
 	}
 }

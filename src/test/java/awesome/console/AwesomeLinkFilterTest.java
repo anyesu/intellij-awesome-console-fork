@@ -234,6 +234,11 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	@Test
+	public void testGradleStacktrace() {
+		assertPathDetection("Gradle build task failed with an exception: Build file 'build.gradle' line: 14", "'build.gradle' line: 14", 14);
+	}
+
+	@Test
 	public void testPathColonAtTheEnd() {
 		assertPathDetection("colon at the end: resources/file1.java:5:1:", "resources/file1.java:5:1", 5, 1);
 		assertPathDetection("colon at the end: C:\\integration\\file1.java:5:4:", "C:\\integration\\file1.java:5:4", 5, 4);
