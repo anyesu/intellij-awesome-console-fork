@@ -4,6 +4,10 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +30,34 @@ public class FileUtils {
     }
 
     /**
+     * Detect a junction/reparse point
+     * <p>
+     *
+     * @see <a href="https://stackoverflow.com/a/74801717">Cross platform way to detect a symbolic link / junction point</a>
+     * @see sun.nio.fs.WindowsFileAttributes#isReparsePoint
+     */
+    public static boolean isReparsePoint(@NotNull Path path) {
+        try {
+            Object attribute = Files.getAttribute(path, "dos:attributes", LinkOption.NOFOLLOW_LINKS);
+            if (attribute instanceof Integer) {
+                // is junction or symlink
+                return ((Integer) attribute & 0x400) != 0;
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    public static boolean isReparsePointOrSymlink(@NotNull String filePath) {
+        try {
+            Path path = Path.of(filePath);
+            return Files.isSymbolicLink(path) || isReparsePoint(path);
+        } catch (InvalidPathException e) {
+            return false;
+        }
+    }
+
+    /**
      * Tests whether the file or directory denoted by this abstract pathname
      * exists.
      *
@@ -36,7 +68,7 @@ public class FileUtils {
         // Finding the UNC path will access the network,
         // which takes a long time and causes the UI to freeze.
         // ref: https://stackoverflow.com/a/48554407
-        return !isUncPath(path) && new File(path).exists();
+        return !isUncPath(path) && (isReparsePointOrSymlink(path) || new File(path).exists());
     }
 
     @Nullable

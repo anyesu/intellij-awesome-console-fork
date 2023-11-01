@@ -36,6 +36,14 @@ patchPluginXml {
     untilBuild = ""
 }
 
+sourceSets {
+    test {
+        resources {
+            exclude '*symlink'
+        }
+    }
+}
+
 if (Boolean.getBoolean("enableJRebel")) {
     plugins.apply 'org.zeroturnaround.gradle.jrebel'
 

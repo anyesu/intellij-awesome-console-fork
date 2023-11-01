@@ -8,6 +8,8 @@ test-files:
 	cp src/test/resources/{testfile,"中文 空格.txt"}
 ifeq ($(OS), Windows_NT)
 	cmd /c 'cd src\test\resources && mklink /J symlink subdir'
+	cmd /c 'cd src\test\resources && mklink /J invalid-symlink unknown'
 else
 	cd src/test/resources && ln -s subdir symlink
+	cd src/test/resources && ln -s unknown invalid-symlink
 endif

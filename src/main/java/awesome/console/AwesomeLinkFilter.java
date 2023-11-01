@@ -306,8 +306,9 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			File file = resolveFile(matchPath);
 			if (null != file) {
 				final boolean isExternal = isExternal(file);
-				final boolean exists = file.exists();
 				String filePath = file.getAbsolutePath();
+				// If a file is a symlink, it should be highlighted regardless of whether its target file exists
+				final boolean exists = FileUtils.quickExists(filePath);
 				if (exists) {
 					final HyperlinkInfo linkInfo = HyperlinkUtils.buildFileHyperlinkInfo(
 							project, filePath, match.linkedRow, match.linkedCol
