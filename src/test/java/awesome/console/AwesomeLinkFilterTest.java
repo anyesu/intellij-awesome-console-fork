@@ -319,13 +319,12 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 				"/tmp/file2.java:20:2",
 				"/tmp/file3.java:20:3"
 		);
-		// TODO
-		// assertPathDetection(
-		// 		"Comma or semicolon separated paths: src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile",
-		// 		"src/test/resources/file1.java",
-		// 		"src/test/resources/file1.py",
-		// 		"src/test/resources/testfile"
-		// );
+		assertPathDetection(
+				"Comma or semicolon separated paths: src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile",
+				"src/test/resources/file1.java",
+				"src/test/resources/file1.py",
+				"src/test/resources/testfile"
+		);
 		assertPathDetection(
 				"Comma or semicolon separated paths: src/test/resources/file1.java:20:1,src/test/resources/file1.java:20:2;src/test/resources/file1.java:20:3",
 				"src/test/resources/file1.java:20:1",
@@ -355,6 +354,10 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testPathBoundary() {
 		assertPathDetection("warning: LF will be replaced by CRLF in README.md.", "README.md");
+		assertPathDetection(
+				"git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --",
+				"src/main/java/awesome/console/AwesomeLinkFilter.java"
+		);
 		assertPathDetection("error TS18003: No inputs were found in config file 'tsconfig.json'.", "tsconfig.json");
 
 		assertPathDetection(".", ".");

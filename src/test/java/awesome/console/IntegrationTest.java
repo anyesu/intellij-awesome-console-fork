@@ -88,7 +88,7 @@ public class IntegrationTest {
 		System.out.println("Comma or semicolon separated paths: C:\\integration\\file1.java:20:1,C:\\integration\\file2.java:20:5;C:\\integration\\file3.java:20:10");
 		System.out.println("Comma or semicolon separated paths: /tmp/file1.java,/tmp/file2.java;/tmp/file3.java");
 		System.out.println("Comma or semicolon separated paths: /tmp/file1.java:20:1,/tmp/file2.java:20:5;/tmp/file3.java:20:10");
-		System.out.println("Comma or semicolon separated paths(\u001b[33mTODO split these\u001b[0m): src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile");
+		System.out.println("Comma or semicolon separated paths: src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile");
 		System.out.println("Comma or semicolon separated paths: src/test/resources/file1.java:20:1,src/test/resources/file1.java:20:5;src/test/resources/file1.java:20:10 ");
 
 		System.out.println("Java stackTrace: at awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory(AwesomeLinkFilterTest.java:14)");
@@ -126,6 +126,7 @@ public class IntegrationTest {
 		System.out.println("\u001b[31mWARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/C:/integration/file1.java) to field java.io.DeleteOnExitHook.files\u001b[0m");
 
 		System.out.println("git console log: \u001b[31mwarning: LF will be replaced by CRLF in README.md.\u001b[0m");
+		System.out.println("git console log: git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --");
 		System.out.println("\u001b[31merror\u001b[0m \u001b[37mTS18003\u001b[0m: No inputs were found in config file 'tsconfig.json'. ");
 		System.out.println(".");
 		System.out.println("..");

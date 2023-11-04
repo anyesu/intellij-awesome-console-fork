@@ -94,6 +94,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 					List.of(
 							"\\(\\d+,\\d+\\)",
 							"\\(\\S+\\.(java|kts?):\\d+\\)",
+							"[,;]\\w+" + REGEX_SEPARATOR,
 							// drive or protocol
 							String.format("(?<!%s)%s+:%s", REGEX_LETTER, REGEX_LETTER, REGEX_SEPARATOR)
 					),
