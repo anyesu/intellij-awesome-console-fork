@@ -75,17 +75,34 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			"(?:\\s*[)\\]])?"
 	);
 
-	public static final String REGEX_SEPARATOR = "[\\\\/]+";
+	public static final String REGEX_SEPARATOR = "[/\\\\]+";
 
-	public static final String REGEX_CHAR = "[^\\\\/:*?\"<>|\\s\\x00-\\x1F\\x7F]";
+	public static final String REGEX_CHAR = "[^\\s\\x00-\\x1F\"*/:<>?\\\\|\\x7F]";
 
-	public static final String REGEX_DRIVE = String.format("(?:~|[a-zA-Z]:)(?=%s)", REGEX_SEPARATOR);
+	public static final String REGEX_LETTER = "[A-Za-z]";
 
-	public static final String REGEX_PROTOCOL = "[a-zA-Z]+://";
+	public static final String REGEX_DRIVE = String.format("(?i:~|[a-z]:)(?=%s)", REGEX_SEPARATOR);
 
-	public static final String REGEX_DOTS_PATH = "(?<=^|[\\s\\\\/])\\.+";
+	public static final String REGEX_PROTOCOL = REGEX_LETTER + "+://";
 
-	public static final String REGEX_FILE_NAME = String.format("((?!\\(\\d+,\\d+\\)|\\(\\S+\\.(java|kts?):\\d+\\)|(?<![a-zA-Z])[a-zA-Z]:[\\\\/]+)(?:%s))+(?<![,;()\\]'\\.])", REGEX_CHAR);
+	public static final String REGEX_DOTS_PATH = "(?<=^|[\\s/\\\\])\\.+";
+
+	public static final String REGEX_FILE_NAME = String.format(
+			"((?!%s)(?:%s))+(?<!%s)",
+			// stop with
+			StringUtil.join(
+					List.of(
+							"\\(\\d+,\\d+\\)",
+							"\\(\\S+\\.(java|kts?):\\d+\\)",
+							// drive or protocol
+							String.format("(?<!%s)%s+:%s", REGEX_LETTER, REGEX_LETTER, REGEX_SEPARATOR)
+					),
+					"|"
+			),
+			REGEX_CHAR,
+			// not end with
+			"['(),.;\\[\\]]"
+	);
 
 	public static final String REGEX_FILE_NAME_WITH_SPACE = String.format("(?! )(?:(?:%s)| )+(?<! )", REGEX_CHAR);
 
@@ -100,7 +117,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	);
 
 	public static final Pattern FILE_PATTERN = Pattern.compile(
-			String.format("(?![\\s,;\\]])(?<link>[\\(\\[']?(?:%s|%s)%s[)\\]']?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
+			String.format("(?![\\s,;\\]])(?<link>['(\\[]?(?:%s|%s)%s[')\\]]?)", REGEX_PATH_WITH_SPACE, REGEX_PATH, REGEX_ROW_COL),
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
