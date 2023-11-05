@@ -3,13 +3,12 @@ package awesome.console;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
-
-import java.util.List;
 
 public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
@@ -171,6 +170,16 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	public void testURLFILE() {
 		assertURLDetection("omfg something: file:///home/root yay", "file:///home/root");
 		assertPathDetection("omfg something: file:///home/root yay", "/home/root");
+		assertPathDetection("omfg something: file://C:/Windows yay", "C:/Windows");
+		assertPathDetection("omfg something: file:///C:/Windows/Temp yay", "C:/Windows/Temp");
+		assertPathDetection(
+				"WARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/H:/maven/com/jetbrains/intellij/idea/ideaIC/2021.2.1/ideaIC-2021.2.1/lib/util.jar) to field java.io.DeleteOnExitHook.files",
+				"H:/maven/com/jetbrains/intellij/idea/ideaIC/2021.2.1/ideaIC-2021.2.1/lib/util.jar"
+		);
+		assertPathDetection(
+				"WARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/src/test/resources/file1.java) to field java.io.DeleteOnExitHook.files",
+				"/src/test/resources/file1.java"
+		);
 	}
 
 	@Test
@@ -264,9 +273,12 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	@Test
-	public void testPathWithSingleDotOrDoubleDot() {
+	public void testPathWithDots() {
 		assertPathDetection("Path: . ", ".");
 		assertPathDetection("Path: .. ", "..");
+		assertPathDetection("Path: ./intellij-awesome-console/src ", "./intellij-awesome-console/src");
+		assertPathDetection("Path: ../intellij-awesome-console/src ", "../intellij-awesome-console/src");
+		assertPathDetection("Path: .../intellij-awesome-console/src ", ".../intellij-awesome-console/src");
 		assertPathDetection("File: .gitignore ", ".gitignore");
 		assertPathDetection("File ./src/test/resources/subdir/./file1.java", "./src/test/resources/subdir/./file1.java");
 		assertPathDetection("File ./src/test/resources/subdir/../file1.java", "./src/test/resources/subdir/../file1.java");
@@ -276,6 +288,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	public void testUncPath() {
 		assertPathDetection("UNC path: \\\\localhost\\c$", "\\\\localhost\\c$");
 		assertPathDetection("UNC path: \\\\server\\share\\folder\\myfile.txt", "\\\\server\\share\\folder\\myfile.txt");
+		assertPathDetection("UNC path: \\\\123.123.123.123\\share\\folder\\myfile.txt", "\\\\123.123.123.123\\share\\folder\\myfile.txt");
 		assertPathDetection("UNC path: file://///localhost/c$", "///localhost/c$");
 	}
 
@@ -286,11 +299,28 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\" ", "\"src/test/resources/中文 空格.txt\"");
 		assertPathDetection("path: \"file://src/test/resources/中文 空格.txt\" ", "\"src/test/resources/中文 空格.txt\"");
 		assertPathDetection("Path: \"  src/test/resources/中文 空格.txt  \" ", "空格.txt");
-		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\":5:4 ", "\"src/test/resources/中文 空格.txt\":5:4");
+		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\":5:4 ", "\"src/test/resources/中文 空格.txt\":5:4", 5, 4);
+		// TODO maybe row:col is enclosed in quotes?
+		// assertPathDetection("Path: \"src/test/resources/中文 空格.txt:5:4\" ", "\"src/test/resources/中文 空格.txt:5:4\"", 5, 4);
 		assertPathDetection("Path: \"src/test/resources/subdir/file1.java\" ", "\"src/test/resources/subdir/file1.java\"");
-		assertPathDetection("Path: \"src/test/  resources/subdir/file1.java\" ", "resources/subdir/file1.java");
-		assertPathDetection("Path: \"src/test/resources/subdir/ file1.java\" ", "file1.java");
-		assertPathDetection("Path: \"src/test/resources/subdir /file1.java\" ", "/file1.java");
+		assertPathDetection("Path: \"src/test/  resources/subdir/file1.java\" ", "src/test/", "resources/subdir/file1.java");
+		assertPathDetection("Path: \"src/test/resources/subdir/file1.java \" ", "src/test/resources/subdir/file1.java");
+		assertPathDetection("Path: \"src/test/resources/subdir/ file1.java\" ", "src/test/resources/subdir/", "file1.java");
+		assertPathDetection("Path: \"src/test/resources/subdir /file1.java\" ", "src/test/resources/subdir", "/file1.java");
+	}
+
+	@Test
+	public void testPathWithUnclosedQuotes() {
+		assertPathDetection("Path: \"src/test/resources/中文 空格.txt", "src/test/resources/中文", "空格.txt");
+		assertPathDetection("Path: src/test/resources/中文 空格.txt\"", "src/test/resources/中文", "空格.txt");
+		assertPathDetection("Path: \"src/test/resources/中文 空格.txt'", "src/test/resources/中文", "空格.txt");
+		assertPathDetection("Path: src/test/resources/中文 空格.txt]", "src/test/resources/中文", "空格.txt");
+		assertPathDetection(
+				"Path: \"src/test/resources/中文 空格.txt   \"src/test/resources/中文 空格.txt\"",
+				"src/test/resources/中文",
+				"空格.txt",
+				"\"src/test/resources/中文 空格.txt\""
+		);
 	}
 
 	@Test
@@ -331,6 +361,48 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 				"src/test/resources/file1.java:20:2",
 				"src/test/resources/file1.java:20:3"
 		);
+
+		assertPathDetection(
+				"Comma or semicolon separated paths: file://C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java",
+				"C:/integration/file1.java",
+				"C:/integration/file2.java",
+				"C:/integration/file3.java"
+		);
+
+		assertPathDetection(
+				"Comma or semicolon separated paths: file://C:/integration/file1.java,file://C:/integration/file2.java;file://C:/integration/file3.java",
+				"C:/integration/file1.java",
+				"C:/integration/file2.java",
+				"C:/integration/file3.java"
+		);
+
+		assertPathDetection(
+				"Comma or semicolon separated paths: file:///tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
+				"/tmp/file1.java",
+				"/tmp/file2.java",
+				"/tmp/file3.java"
+		);
+
+		assertPathDetection(
+				"Comma or semicolon separated paths: file:///tmp/file1.java,file:///tmp/file2.java;file:///tmp/file3.java",
+				"/tmp/file1.java",
+				"/tmp/file2.java",
+				"/tmp/file3.java"
+		);
+
+		assertPathDetection(
+				"Comma or semicolon separated paths: file://src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile",
+				"src/test/resources/file1.java",
+				"src/test/resources/file1.py",
+				"src/test/resources/testfile"
+		);
+
+		assertPathDetection(
+				"Comma or semicolon separated paths: file://src/test/resources/file1.java,file://src/test/resources/file1.py;file://src/test/resources/testfile",
+				"src/test/resources/file1.java",
+				"src/test/resources/file1.py",
+				"src/test/resources/testfile"
+		);
 	}
 
 	@Test
@@ -348,6 +420,8 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 					"awesome.console.IntegrationTest:4",
 					"awesome.console.IntegrationTest:5"
 			);
+
+			assertURLDetection(String.format("something %sfile:///tmp%s blabla", start, end), "file:///tmp");
 		}
 	}
 
@@ -367,6 +441,12 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Path end with a dot: src/test/resources/subdir/.", "src/test/resources/subdir/.");
 		assertPathDetection("Path end with a dot: src/test/resources/subdir/..", "src/test/resources/subdir/..");
 		assertPathDetection("Path end with a dot: src/test/resources/subdir...", "src/test/resources/subdir");
+
+		assertPathDetection("╭─[C:\\integration\\file1.java:19:2]", "C:\\integration\\file1.java:19:2", 19, 2);
+		assertPathDetection("╭─[C:\\integration\\file1.java:19]", "C:\\integration\\file1.java:19", 19);
+		assertPathDetection("╭─ C:\\integration\\file1.java:19:10", "C:\\integration\\file1.java:19:10", 19, 10);
+		assertPathDetection("--> [C:\\integration\\file1.java:19:5]", "C:\\integration\\file1.java:19:5", 19, 5);
+		assertPathDetection("--> C:\\integration\\file1.java:19:3", "C:\\integration\\file1.java:19:3", 19, 3);
 	}
 
 	@Test
