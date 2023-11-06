@@ -56,14 +56,11 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	public static final String REGEX_ROW_COL = String.format(
 			"(?i:\\s*+(?:%s)%s(?:%s%s%s)?)?",
 			// start of the row
-			StringUtil.join(
-					List.of(
-							"[:,]\\s*line",
-							"'\\s*line:",
-							":(?:\\s*\\[)?",
-							"\\((?=\\s*\\d+\\s*[:,]\\s*\\d+\\s*\\))"
-					),
-					"|"
+			RegexUtils.join(
+					"[:,]\\s*line",
+					"'\\s*line:",
+					":(?:\\s*\\[)?",
+					"\\((?=\\s*\\d+\\s*[:,]\\s*\\d+\\s*\\))"
 			),
 			// row
 			"\\s*(?<row>\\d+)",
@@ -90,15 +87,12 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	public static final String REGEX_FILE_NAME = String.format(
 			"((?!%s)(?:%s))+(?<!%s)",
 			// stop with
-			StringUtil.join(
-					List.of(
-							"\\(\\d+,\\d+\\)",
-							"\\(\\S+\\.(java|kts?):\\d+\\)",
-							"[,;]\\w+" + REGEX_SEPARATOR,
-							// drive or protocol
-							String.format("(?<!%s)%s+:%s", REGEX_LETTER, REGEX_LETTER, REGEX_SEPARATOR)
-					),
-					"|"
+			RegexUtils.join(
+					"\\(\\d+,\\d+\\)",
+					"\\(\\S+\\.(java|kts?):\\d+\\)",
+					"[,;]\\w+" + REGEX_SEPARATOR,
+					// drive or protocol
+					String.format("(?<!%s)%s+:%s", REGEX_LETTER, REGEX_LETTER, REGEX_SEPARATOR)
 			),
 			REGEX_CHAR,
 			// not end with

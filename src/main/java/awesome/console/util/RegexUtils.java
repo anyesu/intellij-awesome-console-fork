@@ -2,15 +2,23 @@ package awesome.console.util;
 
 import static awesome.console.config.AwesomeConsoleDefaults.DEFAULT_GROUP_RETRIES;
 
+import com.intellij.openapi.util.text.StringUtil;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.IntStream;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author anyesu
  */
 public class RegexUtils {
+
+    @NotNull
+    public static String join(@NotNull final String... strings) {
+        return StringUtil.join(List.of(strings), "|");
+    }
 
     public static int[] tryGetGroupRange(final Matcher matcher, final String group) {
         return tryGetGroupRange(matcher, group, DEFAULT_GROUP_RETRIES);
