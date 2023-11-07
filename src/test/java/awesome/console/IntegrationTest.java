@@ -1,6 +1,11 @@
 package awesome.console;
 
 public class IntegrationTest {
+
+	public static final String[] FILE_PROTOCOLS_WINDOWS = new String[]{"file:", "file:/", "file://", "file:///"};
+
+	public static final String[] FILE_PROTOCOLS_UNIX = new String[]{"file:", "file://"};
+
 	public static void main(final String[] args) {
 		System.out.println(AwesomeLinkFilter.FILE_PATTERN);
 		System.out.println(AwesomeLinkFilter.URL_PATTERN);
@@ -21,7 +26,6 @@ public class IntegrationTest {
 		System.out.println("Just a file with path: \\src/test/resources/file1.java");
 		System.out.println("Just a file with path: /src/test/resources/file1.java");
 		System.out.println("Just a file with path: ./src/test/resources/file1.java");
-		System.out.println("bla-bla at (AwesomeLinkFilter.java:150) something");
 		System.out.println("Absolute path: /tmp");
 		System.out.println("omfg something: git://xkcd.com/ yay");
 		System.out.println("omfg something: http://xkcd.com/ yay");
@@ -29,8 +33,10 @@ public class IntegrationTest {
 		System.out.println("omfg something: https://xkcd.com/ yay");
 		System.out.println("omfg something: http://xkcd.com yay");
 		System.out.println("omfg something: ftp://8.8.8.8:2424 yay");
-		System.out.println("omfg something: file:///tmp yay");
-		System.out.println("omfg something: file:///C:/Windows/Temp yay");
+		printFileProtocols(
+				"omfg something: {file:}/tmp blabla",
+				"omfg something: {file:}C:/Windows/Temp blabla"
+		);
 		System.out.println("omfg something: ftp://user:password@xkcd.com:1337/some/path yay");
 		System.out.println("C:\\Windows\\Temp\\");
 		System.out.println("C:\\Windows\\Temp");
@@ -40,23 +46,17 @@ public class IntegrationTest {
 		System.out.println("C:\\");
 		System.out.println("C:/");
 		System.out.println("\u001b[33mC:\u001b[0m");
-		System.out.println("omfg something: file://C:/Windows yay");
 		System.out.println("[DEBUG] src/test/resources/file1.java:[4,4] cannot find symbol");
 		System.out.println("awesome.console.AwesomeLinkFilter:5");
 		System.out.println("awesome.console.AwesomeLinkFilter.java:50");
-		System.out.println("something (C:\\root\\something.java) blabla");
-		System.out.println("something \"C:\\root\\something.java\" blabla");
-		System.out.println("something 'C:\\root\\something.java' blabla");
 		System.out.println("foo https://en.wikipedia.org/wiki/Parenthesis_(disambiguation) bar");
-		System.out.println("something (file1.java) blabla");
-		System.out.println("(file:///tmp)");
 		System.out.println("C:/Windows/Temp,");
 		System.out.println("C:/Windows/Temp/test.tsx:5:3");
 		System.out.println("Just a file: src/test/resources/file1.java, line 2, column 2");
 		System.out.println("Just a file: src/test/resources/file1.java, line 2, coL 30");
 		System.out.println("Just a file: src/test/resources/file1.java( 5 ,  4   )    ");
 		System.out.println("Just a file: src/test/resources/file1.java (30 KiB)");
-		System.out.println("Just a file with path: file://resources/file1.java:5:40");
+		printFileProtocols("Just a file with path: {file:}resources/file1.java:5:40");
 		System.out.println("Just a file with path: C:\\integration\\file1.java:5:4");
 		System.out.println("colon at the end: resources/file1.java:50:10:");
 		System.out.println("colon at the end: C:\\integration\\file1.java:5:4:");
@@ -82,7 +82,7 @@ public class IntegrationTest {
 		System.out.println("\u001b[33mPath with space is not highlighted by default\u001b[0m: src/test/resources/中文 空格.txt");
 		System.out.println("Path enclosed in double quotes: \"C:\\Program Files (x86)\\Windows NT\" ");
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\" ");
-		System.out.println("Path enclosed in double quotes: \"file://src/test/resources/中文 空格.txt\" ");
+		printFileProtocols("Path enclosed in double quotes: \"{file:}src/test/resources/中文 空格.txt\" ");
 		System.out.println("Path enclosed in double quotes ( \u001b[33mshould not be highlighted\u001b[0m ) : \"  src/test/resources/中文 空格.txt  \" ");
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\":5:4 ");
 		System.out.println("Path enclosed in double quotes ( \u001b[33mTODO maybe row:col is enclosed in quotes?\u001b[0m ) : \"src/test/resources/中文 空格.txt:5:4\" ");
@@ -110,32 +110,11 @@ public class IntegrationTest {
 		System.out.println("PS C:\\Windows\\Temp> echo hello");
 		System.out.println("PS C:\\Program Files (x86)\\Windows NT> echo hello");
 
-		System.out.println("Comma or semicolon separated paths: C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java");
-		System.out.println("Comma or semicolon separated paths: C:\\integration\\file1.java:20:1,C:\\integration\\file2.java:20:5;C:\\integration\\file3.java:20:10");
-		System.out.println("Comma or semicolon separated paths: /tmp/file1.java,/tmp/file2.java;/tmp/file3.java");
-		System.out.println("Comma or semicolon separated paths: /tmp/file1.java:20:1,/tmp/file2.java:20:5;/tmp/file3.java:20:10");
-		System.out.println("Comma or semicolon separated paths: src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile");
-		System.out.println("Comma or semicolon separated paths: src/test/resources/file1.java:20:1,src/test/resources/file1.java:20:5;src/test/resources/file1.java:20:10 ");
-
-		System.out.println("Comma or semicolon separated paths: file://C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java");
-		System.out.println("Comma or semicolon separated paths: file://C:/integration/file1.java,file://C:/integration/file2.java;file://C:/integration/file3.java");
-		System.out.println("Comma or semicolon separated paths: file:///tmp/file1.java,/tmp/file2.java;/tmp/file3.java");
-		System.out.println("Comma or semicolon separated paths: file:///tmp/file1.java,file:///tmp/file2.java;file:///tmp/file3.java");
-		System.out.println("Comma or semicolon separated paths: file://src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile");
-		System.out.println("Comma or semicolon separated paths: file://src/test/resources/file1.java,file://src/test/resources/file1.py;file://src/test/resources/testfile");
+		testPathSeparatedByCommaOrSemicolon();
 
 		System.out.println("Java stackTrace: at awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory(AwesomeLinkFilterTest.java:14)");
 
-		for (final String pair : new String[]{"()", "[]", "''"}) {
-			final String start = String.valueOf(pair.charAt(0));
-			final String end = String.valueOf(pair.charAt(1));
-
-			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:2" + end);
-			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:10:" + end);
-			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:30");
-			System.out.println("Path surrounded by: " + "awesome.console.IntegrationTest:40" + end);
-			System.out.println("Path surrounded by: " + start + "awesome.console.IntegrationTest:45,awesome.console.IntegrationTest:50" + end);
-		}
+		testPathSurroundedBy();
 
 		System.out.println("\u001b[33mIgnore matches\u001b[0m: ./ . .. ... ./ ../ ././../. / // /// \\ \\\\ \\\\\\");
 
@@ -178,5 +157,66 @@ public class IntegrationTest {
 		System.out.println("Path end with a dot: src/test/resources/subdir...");
 
 		System.out.println("Gradle build task failed with an exception: Build file 'build.gradle' line: 14");
+	}
+
+	public static String[] getFileProtocols(final String path) {
+		return path.contains(":/") ? FILE_PROTOCOLS_WINDOWS : FILE_PROTOCOLS_UNIX;
+	}
+
+	public static String parseTemplate(final String s, final String protocol) {
+		return s.replace("{file:}", protocol);
+	}
+
+	private static void printFileProtocols(final String... strings) {
+		for (final String s : strings) {
+			for (final String protocol : getFileProtocols(s)) {
+				System.out.println(parseTemplate(s, protocol));
+			}
+		}
+	}
+
+	private static void testPathSeparatedByCommaOrSemicolon() {
+		final String[] paths = new String[]{
+				"C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java",
+				"C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java",
+				"/tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
+				"src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile"
+		};
+		final String desc = "Comma or semicolon separated paths: ";
+
+		for (final String path : paths) {
+			final String[] files = path.split("[,;]");
+			System.out.println(desc + path);
+			System.out.printf(desc + "%s:20:1,%s:20:5;%s:20:10\n", (Object[]) files);
+			printFileProtocols(
+					desc + "{file:}" + path,
+					String.format(desc + "{file:}%s,{file:}%s;{file:}%s", (Object[]) files)
+			);
+		}
+	}
+
+	private static void testPathSurroundedBy() {
+		final String[] files = new String[]{"file1.java", "C:\\integration\\file1.java", "C:/integration/file1.java", "/tmp/file1.java"};
+		final String desc = "Path surrounded by: ";
+
+		for (final String pair : new String[]{"()", "[]", "''", "\"\""}) {
+			final String start = String.valueOf(pair.charAt(0));
+			final String end = String.valueOf(pair.charAt(1));
+
+			for (final String file : files) {
+				System.out.println(desc + start + file + end);
+			}
+
+			System.out.println(desc + start + "awesome.console.IntegrationTest:2" + end);
+			System.out.println(desc + start + "awesome.console.IntegrationTest:10:" + end);
+			System.out.println(desc + start + "awesome.console.IntegrationTest:30");
+			System.out.println(desc + "awesome.console.IntegrationTest:40" + end);
+			System.out.println(desc + start + "awesome.console.IntegrationTest:45,awesome.console.IntegrationTest:50" + end);
+
+			printFileProtocols(
+					String.format("%s%s{file:}/tmp%s blabla", desc, start, end),
+					String.format("%s%s{file:}C:/Windows/Temp%s blabla", desc, start, end)
+			);
+		}
 	}
 }

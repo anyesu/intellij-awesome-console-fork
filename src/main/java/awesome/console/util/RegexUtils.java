@@ -15,6 +15,15 @@ import org.jetbrains.annotations.NotNull;
  */
 public class RegexUtils {
 
+    /**
+     * Note: The path in the {@code file:} URI has a leading slash which is added by the {@code slashify} method.
+     *
+     * @see java.io.File#toURI()
+     * @see java.io.File#slashify(String, boolean)
+     */
+    @SuppressWarnings("JavadocReference")
+    public static final Pattern WINDOWS_DRIVE_PATTERN = Pattern.compile("^/?[A-Za-z]:[/\\\\]+.*");
+
     @NotNull
     public static String join(@NotNull final String... strings) {
         return StringUtil.join(List.of(strings), "|");

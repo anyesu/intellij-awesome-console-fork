@@ -1,5 +1,8 @@
 package awesome.console;
 
+import static awesome.console.IntegrationTest.getFileProtocols;
+import static awesome.console.IntegrationTest.parseTemplate;
+
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
@@ -169,16 +172,15 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testURLFILE() {
 		assertURLDetection("omfg something: file:///home/root yay", "file:///home/root");
-		assertPathDetection("omfg something: file:///home/root yay", "/home/root");
-		assertPathDetection("omfg something: file://C:/Windows yay", "C:/Windows");
-		assertPathDetection("omfg something: file:///C:/Windows/Temp yay", "C:/Windows/Temp");
+		assertFilePathDetection("omfg something: {file:}/home/root yay", "{file:}/home/root");
+		assertFilePathDetection("omfg something: {file:}C:/Windows/Temp yay", "{file:}C:/Windows/Temp");
 		assertPathDetection(
 				"WARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/H:/maven/com/jetbrains/intellij/idea/ideaIC/2021.2.1/ideaIC-2021.2.1/lib/util.jar) to field java.io.DeleteOnExitHook.files",
-				"H:/maven/com/jetbrains/intellij/idea/ideaIC/2021.2.1/ideaIC-2021.2.1/lib/util.jar"
+				"file:/H:/maven/com/jetbrains/intellij/idea/ideaIC/2021.2.1/ideaIC-2021.2.1/lib/util.jar"
 		);
 		assertPathDetection(
 				"WARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/src/test/resources/file1.java) to field java.io.DeleteOnExitHook.files",
-				"/src/test/resources/file1.java"
+				"file:/src/test/resources/file1.java"
 		);
 	}
 
@@ -289,7 +291,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("UNC path: \\\\localhost\\c$", "\\\\localhost\\c$");
 		assertPathDetection("UNC path: \\\\server\\share\\folder\\myfile.txt", "\\\\server\\share\\folder\\myfile.txt");
 		assertPathDetection("UNC path: \\\\123.123.123.123\\share\\folder\\myfile.txt", "\\\\123.123.123.123\\share\\folder\\myfile.txt");
-		assertPathDetection("UNC path: file://///localhost/c$", "///localhost/c$");
+		assertPathDetection("UNC path: file://///localhost/c$", "file://///localhost/c$");
 	}
 
 	@Test
@@ -297,7 +299,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Path: src/test/resources/中文 空格.txt ", "空格.txt");
 		assertPathDetection("Path: \"C:\\Program Files (x86)\\Windows NT\" ", "\"C:\\Program Files (x86)\\Windows NT\"");
 		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\" ", "\"src/test/resources/中文 空格.txt\"");
-		assertPathDetection("path: \"file://src/test/resources/中文 空格.txt\" ", "\"src/test/resources/中文 空格.txt\"");
+		assertFilePathDetection("path: \"{file:}src/test/resources/中文 空格.txt\" ", "\"{file:}src/test/resources/中文 空格.txt\"");
 		assertPathDetection("Path: \"  src/test/resources/中文 空格.txt  \" ", "空格.txt");
 		assertPathDetection("Path: \"src/test/resources/中文 空格.txt\":5:4 ", "\"src/test/resources/中文 空格.txt\":5:4", 5, 4);
 		// TODO maybe row:col is enclosed in quotes?
@@ -325,103 +327,58 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testPathSeparatedByCommaOrSemicolon() {
-		assertPathDetection(
-				"Comma or semicolon separated paths: C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java",
-				"C:\\integration\\file1.java",
-				"C:\\integration\\file2.java",
-				"C:\\integration\\file3.java"
-		);
-		assertPathDetection(
-				"Comma or semicolon separated paths: C:\\integration\\file1.java:20:1,C:\\integration\\file2.java:20:2;C:\\integration\\file3.java:20:3",
-				"C:\\integration\\file1.java:20:1",
-				"C:\\integration\\file2.java:20:2",
-				"C:\\integration\\file3.java:20:3"
-		);
-		assertPathDetection(
-				"Comma or semicolon separated paths: /tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
-				"/tmp/file1.java",
-				"/tmp/file2.java",
-				"/tmp/file3.java"
-		);
-		assertPathDetection(
-				"Comma or semicolon separated paths: /tmp/file1.java:20:1,/tmp/file2.java:20:2;/tmp/file3.java:20:3",
-				"/tmp/file1.java:20:1",
-				"/tmp/file2.java:20:2",
-				"/tmp/file3.java:20:3"
-		);
-		assertPathDetection(
-				"Comma or semicolon separated paths: src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile",
-				"src/test/resources/file1.java",
-				"src/test/resources/file1.py",
-				"src/test/resources/testfile"
-		);
-		assertPathDetection(
-				"Comma or semicolon separated paths: src/test/resources/file1.java:20:1,src/test/resources/file1.java:20:2;src/test/resources/file1.java:20:3",
-				"src/test/resources/file1.java:20:1",
-				"src/test/resources/file1.java:20:2",
-				"src/test/resources/file1.java:20:3"
-		);
+		final String[] paths = new String[]{
+				"C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java",
+				"C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java",
+				"/tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
+				"src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile"
+		};
+		final String desc = "Comma or semicolon separated paths: ";
 
-		assertPathDetection(
-				"Comma or semicolon separated paths: file://C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java",
-				"C:/integration/file1.java",
-				"C:/integration/file2.java",
-				"C:/integration/file3.java"
-		);
-
-		assertPathDetection(
-				"Comma or semicolon separated paths: file://C:/integration/file1.java,file://C:/integration/file2.java;file://C:/integration/file3.java",
-				"C:/integration/file1.java",
-				"C:/integration/file2.java",
-				"C:/integration/file3.java"
-		);
-
-		assertPathDetection(
-				"Comma or semicolon separated paths: file:///tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
-				"/tmp/file1.java",
-				"/tmp/file2.java",
-				"/tmp/file3.java"
-		);
-
-		assertPathDetection(
-				"Comma or semicolon separated paths: file:///tmp/file1.java,file:///tmp/file2.java;file:///tmp/file3.java",
-				"/tmp/file1.java",
-				"/tmp/file2.java",
-				"/tmp/file3.java"
-		);
-
-		assertPathDetection(
-				"Comma or semicolon separated paths: file://src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile",
-				"src/test/resources/file1.java",
-				"src/test/resources/file1.py",
-				"src/test/resources/testfile"
-		);
-
-		assertPathDetection(
-				"Comma or semicolon separated paths: file://src/test/resources/file1.java,file://src/test/resources/file1.py;file://src/test/resources/testfile",
-				"src/test/resources/file1.java",
-				"src/test/resources/file1.py",
-				"src/test/resources/testfile"
-		);
+		for (final String path : paths) {
+			final String[] files = path.split("[,;]");
+			assertPathDetection(desc + path, files);
+			assertPathDetection(
+					String.format(desc + "%s:20:1,%s:20:5;%s:20:10", (Object[]) files),
+					files[0] + ":20:1", files[1] + ":20:5", files[2] + ":20:10"
+			);
+			assertFilePathDetection(desc + "{file:}" + path, "{file:}" + files[0], files[1], files[2]);
+			assertFilePathDetection(
+					String.format(desc + "{file:}%s,{file:}%s;{file:}%s", (Object[]) files),
+					"{file:}" + files[0], "{file:}" + files[1], "{file:}" + files[2]
+			);
+		}
 	}
 
 	@Test
 	public void testPathSurroundedBy() {
-		for (final String pair : new String[]{"()", "[]", "''"}) {
+		final String[] files = new String[]{"file1.java", "C:\\integration\\file1.java", "C:/integration/file1.java", "/tmp/file1.java"};
+		final String desc = "Path surrounded by: ";
+
+		for (final String pair : new String[]{"()", "[]", "''", "\"\""}) {
 			final String start = String.valueOf(pair.charAt(0));
 			final String end = String.valueOf(pair.charAt(1));
+			final boolean IsDoubleQuote = "\"".equals(start);
 
-			assertPathDetection(start + "awesome.console.IntegrationTest:4" + end, "awesome.console.IntegrationTest:4", 4);
-			assertPathDetection(start + "awesome.console.IntegrationTest:4:" + end, "awesome.console.IntegrationTest:4", 4);
-			assertPathDetection(start + "awesome.console.IntegrationTest:4", "awesome.console.IntegrationTest:4", 4);
-			assertPathDetection("awesome.console.IntegrationTest:4" + end, "awesome.console.IntegrationTest:4", 4);
+			for (final String file : files) {
+				final String line = start + file + end;
+				assertPathDetection(desc + line, IsDoubleQuote ? line : file);
+			}
+
+			assertPathDetection(desc + start + "awesome.console.IntegrationTest:2" + end, "awesome.console.IntegrationTest:2", 2);
+			assertPathDetection(desc + start + "awesome.console.IntegrationTest:10:" + end, "awesome.console.IntegrationTest:10", 10);
+			assertPathDetection(desc + start + "awesome.console.IntegrationTest:30", "awesome.console.IntegrationTest:30", 30);
+			assertPathDetection(desc + "awesome.console.IntegrationTest:40" + end, "awesome.console.IntegrationTest:40", 40);
 			assertPathDetection(
-					start + "awesome.console.IntegrationTest:4,awesome.console.IntegrationTest:5" + end,
-					"awesome.console.IntegrationTest:4",
-					"awesome.console.IntegrationTest:5"
+					desc + start + "awesome.console.IntegrationTest:45,awesome.console.IntegrationTest:50" + end,
+					"awesome.console.IntegrationTest:45",
+					"awesome.console.IntegrationTest:50"
 			);
 
 			assertURLDetection(String.format("something %sfile:///tmp%s blabla", start, end), "file:///tmp");
+			final String expected = "{file:}/tmp";
+			final String line = start + expected + end;
+			assertFilePathDetection(desc + line, IsDoubleQuote ? line : expected);
 		}
 	}
 
@@ -465,7 +422,16 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Windows drive root: C:\\/", "C:\\/");
 	}
 
+	private void assertFilePathDetection(@NotNull final String line, @NotNull final String... expected) {
+		for (final String protocol : getFileProtocols(line)) {
+			final String[] expected2 = Stream.of(expected).map(s -> parseTemplate(s, protocol)).toArray(String[]::new);
+			assertPathDetection(parseTemplate(line, protocol), expected2);
+		}
+	}
+
 	private List<FileLinkMatch> assertPathDetection(@NotNull final String line, @NotNull final String... expected) {
+		System.out.println(line);
+
 		AwesomeLinkFilter filter = new AwesomeLinkFilter(getProject());
 
 		// Test only detecting file paths - no file existence check

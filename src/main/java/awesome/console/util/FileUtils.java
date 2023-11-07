@@ -20,8 +20,16 @@ import org.jetbrains.annotations.Nullable;
  */
 public class FileUtils {
 
+    public static boolean isAbsolutePath(@NotNull final String path) {
+        return isUnixAbsolutePath(path) || isWindowsAbsolutePath(path);
+    }
+
     public static boolean isUnixAbsolutePath(@NotNull String path) {
         return path.startsWith("/") || path.startsWith("\\");
+    }
+
+    public static boolean isWindowsAbsolutePath(@NotNull final String path) {
+        return RegexUtils.WINDOWS_DRIVE_PATTERN.matcher(path).matches();
     }
 
     public static boolean isUncPath(@NotNull String path) {

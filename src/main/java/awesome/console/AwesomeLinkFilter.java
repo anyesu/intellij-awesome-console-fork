@@ -1,5 +1,9 @@
 package awesome.console;
 
+import static awesome.console.util.FileUtils.isAbsolutePath;
+import static awesome.console.util.FileUtils.isUnixAbsolutePath;
+import static awesome.console.util.FileUtils.isWindowsAbsolutePath;
+
 import awesome.console.config.AwesomeConsoleStorage;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
@@ -34,6 +38,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,9 +83,32 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 
 	public static final String REGEX_LETTER = "[A-Za-z]";
 
-	public static final String REGEX_DRIVE = String.format("(?i:~|[a-z]:)(?=%s)", REGEX_SEPARATOR);
+	/**
+	 * Note: The path in the {@code file:} URI has a leading slash which is added by the {@code slashify} method.
+	 *
+	 * @see java.io.File#toURI()
+	 * @see java.io.File#slashify(String, boolean)
+	 */
+	@SuppressWarnings("JavadocReference")
+	public static final String REGEX_DRIVE = String.format("(?i:~|/?[a-z]:)(?=%s)", REGEX_SEPARATOR);
 
-	public static final String REGEX_PROTOCOL = REGEX_LETTER + "+://";
+	/**
+	 * URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+	 * <p>
+	 * ref: https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
+	 * <p>
+	 * Note: The authority component in URI can be empty {@code `//`}.
+	 *
+	 * <pre>
+	 * - file:C:/         - no authority component
+	 * - file:/C:/        - leading slash added by {@code slashify}
+	 * - file://C:/       - empty authority component {@code `//`}
+	 * - file:///C:/      - leading slash added by {@code slashify}
+	 * </pre>
+	 *
+	 * @see java.net.URI
+	 */
+	public static final String REGEX_PROTOCOL = String.format("%s{2,}:(?://)?", REGEX_LETTER);
 
 	public static final String REGEX_DOTS_PATH = "(?<=^|[\\s/\\\\])\\.+";
 
@@ -90,7 +118,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			RegexUtils.join(
 					"\\(\\d+,\\d+\\)",
 					"\\(\\S+\\.(java|kts?):\\d+\\)",
-					"[,;]\\w+" + REGEX_SEPARATOR,
+					"[,;]\\w+[/\\\\:]",
 					// drive or protocol
 					String.format("(?<!%s)%s+:%s", REGEX_LETTER, REGEX_LETTER, REGEX_SEPARATOR)
 			),
@@ -119,8 +147,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			"(?<link>[(']?(?<protocol>(([a-zA-Z]+):)?([/\\\\~]))(?<path>([-.!~*\\\\'()\\w;/?:@&=+$,%#]" + DWC + "?)+))",
 			Pattern.UNICODE_CHARACTER_CLASS);
 
-	public static final Pattern DRIVE_PATTERN = Pattern.compile(String.format("^(?<drive>%s)", REGEX_DRIVE));
-
 	public static final Pattern STACK_TRACE_ELEMENT_PATTERN = Pattern.compile("^[\\w|\\s]*at\\s+(.+)\\.(.+)\\((.+\\.(java|kts?)):(\\d+)\\)");
 
 	private static final int maxSearchDepth = 1;
@@ -132,7 +158,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	private volatile List<String> srcRoots = Collections.emptyList();
 	private final ThreadLocal<Matcher> fileMatcher = ThreadLocal.withInitial(() -> FILE_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> urlMatcher = ThreadLocal.withInitial(() -> URL_PATTERN.matcher(""));
-	private final ThreadLocal<Matcher> driveMatcher = ThreadLocal.withInitial(() -> DRIVE_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> stackTraceElementMatcher = ThreadLocal.withInitial(() -> STACK_TRACE_ELEMENT_PATTERN.matcher(""));
 	private final ThreadLocal<Matcher> fileMatcherConfig = new ThreadLocal<>();
 	private final ThreadLocal<Matcher> ignoreMatcher = new ThreadLocal<>();
@@ -260,14 +285,6 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		return results;
 	}
 
-	private boolean isAbsolutePath(@NotNull final String path) {
-		if (FileUtils.isUnixAbsolutePath(path)) {
-			return true;
-		}
-		final Matcher driveMatcher = this.driveMatcher.get();
-		return driveMatcher.reset(path).find();
-	}
-
 	public String getFileFromUrl(@NotNull final String url) {
 		if (isAbsolutePath(url)) {
 			return url;
@@ -348,7 +365,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 					results.add(new Result(startPoint + match.start, startPoint + match.end, linkInfo));
 					continue;
 				} else if (isExternal) {
-					if (!FileUtils.isUnixAbsolutePath(matchPath)) {
+					if (!isUnixAbsolutePath(matchPath)) {
 						continue;
 					}
 					// Resolve absolute paths starting with a slash into relative paths based on the project root as a fallback
@@ -655,13 +672,16 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				continue;
 			}
 
-			final String protocol = RegexUtils.tryMatchGroup(fileMatcher, "protocol");
-			if ("file://".equalsIgnoreCase(protocol)) {
-				match = match.replace(protocol, "");
-				path = path.substring(protocol.length());
-			} else if (null != protocol) {
-				// ignore url
-				continue;
+			String protocol = RegexUtils.tryMatchGroup(fileMatcher, "protocol");
+			if (null != protocol) {
+				protocol = protocol.toLowerCase();
+				if (Stream.of("file:").anyMatch(protocol::startsWith)) {
+					// match = match.replace(protocol, "");
+					path = path.substring(protocol.length());
+				} else {
+					// ignore url
+					continue;
+				}
 			}
 
 			// Resolve '~' to user's home directory
@@ -669,6 +689,9 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				path = SystemUtils.getUserHome();
 			} else if (path.startsWith("~/") || path.startsWith("~\\")) {
 				path = SystemUtils.getUserHome() + path.substring(1);
+			} else if (isUnixAbsolutePath(path) && isWindowsAbsolutePath(path)) {
+				// Remove leading slash, to transform "/c:/foo" into "c:/foo".
+				path = path.substring(1);
 			}
 
 			final int row = IntegerUtil.parseInt(RegexUtils.tryMatchGroup(fileMatcher, "row")).orElse(0);
