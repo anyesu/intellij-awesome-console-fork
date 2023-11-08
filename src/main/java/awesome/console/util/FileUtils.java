@@ -81,8 +81,9 @@ public class FileUtils {
      * <p>
      *
      * @see <a href="https://stackoverflow.com/a/74801717">Cross platform way to detect a symbolic link / junction point</a>
-     * @see sun.nio.fs.WindowsFileAttributes#isReparsePoint
+     * @see sun.nio.fs.WindowsFileAttributes#isReparsePoint(int)
      */
+    @SuppressWarnings("JavadocReference")
     public static boolean isReparsePoint(@NotNull Path path) {
         try {
             Object attribute = Files.getAttribute(path, "dos:attributes", LinkOption.NOFOLLOW_LINKS);

@@ -27,6 +27,7 @@ import javax.swing.*;
  *
  * ref: https://plugins.jetbrains.com/docs/intellij/settings-guide.html
  */
+@SuppressWarnings({"unused", "SameParameterValue"})
 public class AwesomeConsoleConfig implements Configurable {
 
 	private AwesomeConsoleConfigForm form;

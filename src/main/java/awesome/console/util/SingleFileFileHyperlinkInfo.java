@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author anyesu
  */
+@SuppressWarnings("unused")
 public class SingleFileFileHyperlinkInfo extends FileHyperlinkInfoBase {
 
     public static final String DISPOSAL_EXCEPTION_MESSAGE = "Editor is already disposed";

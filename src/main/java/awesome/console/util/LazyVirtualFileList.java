@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author anyesu
  */
+@SuppressWarnings("unused")
 public class LazyVirtualFileList extends ListDecorator<VirtualFile> {
 
     private final BooleanSupplier resolveSymlink;

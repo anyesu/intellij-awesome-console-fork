@@ -2,6 +2,7 @@ package awesome.console;
 
 import java.util.stream.Stream;
 
+@SuppressWarnings("HttpUrlsUsage")
 public class IntegrationTest {
 
 	public static final String JAVA_HOME = System.getProperty("java.home").replace('\\', '/');

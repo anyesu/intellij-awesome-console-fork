@@ -515,7 +515,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 				.collect(Collectors.toList());
 	}
 
-	private void notifyUser(String title, String message) {
+	private void notifyUser(@NotNull String title, @NotNull String message) {
 		Notifier.notify(
 				project, title, message,
 				NotificationAction.createSimple("Reload file cache", () -> reloadFileCache("manual"))
@@ -568,6 +568,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		// ref: https://plugins.jetbrains.com/docs/intellij/virtual-file-system.html#virtual-file-system-events
 		// ref: https://plugins.jetbrains.com/docs/intellij/virtual-file.html#how-do-i-get-notified-when-vfs-changes
 		connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
+			@SuppressWarnings("StatementWithEmptyBody")
 			@Override
 			public void after(@NotNull List<? extends @NotNull VFileEvent> events) {
 				List<VirtualFile> newFiles = new ArrayList<>();

@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author anyesu
  */
+@SuppressWarnings("unused")
 public class HyperlinkUtils {
 
     private static final AwesomeConsoleStorage config = AwesomeConsoleStorage.getInstance();

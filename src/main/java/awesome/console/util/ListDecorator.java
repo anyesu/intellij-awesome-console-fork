@@ -8,6 +8,7 @@ import java.util.ListIterator;
 /**
  * @author anyesu
  */
+@SuppressWarnings({"unused", "NullableProblems", "SuspiciousToArrayCall"})
 public class ListDecorator<E> implements List<E> {
 
     protected List<E> list;

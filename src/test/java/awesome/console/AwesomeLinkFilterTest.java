@@ -14,8 +14,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-@SuppressWarnings("SameParameterValue")
+/**
+ * ref: https://github.com/JetBrains/intellij-community/blob/212.5080/platform/testFramework/src/com/intellij/testFramework/UsefulTestCase.java#L82-L83
+ */
+@SuppressWarnings({"HttpUrlsUsage", "SameParameterValue"})
+@RunWith(JUnit4.class)
 public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testFileWithoutDirectory() {
