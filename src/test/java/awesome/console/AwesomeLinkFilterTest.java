@@ -1,6 +1,8 @@
 package awesome.console;
 
+import static awesome.console.IntegrationTest.JAVA_HOME;
 import static awesome.console.IntegrationTest.getFileProtocols;
+import static awesome.console.IntegrationTest.getJarFileProtocols;
 import static awesome.console.IntegrationTest.parseTemplate;
 
 import awesome.console.match.FileLinkMatch;
@@ -13,6 +15,7 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
+@SuppressWarnings("SameParameterValue")
 public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testFileWithoutDirectory() {
@@ -358,11 +361,11 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		for (final String pair : new String[]{"()", "[]", "''", "\"\""}) {
 			final String start = String.valueOf(pair.charAt(0));
 			final String end = String.valueOf(pair.charAt(1));
-			final boolean IsDoubleQuote = "\"".equals(start);
+			final boolean isDoubleQuote = "\"".equals(start);
 
 			for (final String file : files) {
 				final String line = start + file + end;
-				assertPathDetection(desc + line, IsDoubleQuote ? line : file);
+				assertPathDetection(desc + line, isDoubleQuote ? line : file);
 			}
 
 			assertPathDetection(desc + start + "awesome.console.IntegrationTest:2" + end, "awesome.console.IntegrationTest:2", 2);
@@ -378,7 +381,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 			assertURLDetection(String.format("something %sfile:///tmp%s blabla", start, end), "file:///tmp");
 			final String expected = "{file:}/tmp";
 			final String line = start + expected + end;
-			assertFilePathDetection(desc + line, IsDoubleQuote ? line : expected);
+			assertFilePathDetection(desc + line, isDoubleQuote ? line : expected);
 		}
 	}
 
@@ -422,11 +425,42 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Windows drive root: C:\\/", "C:\\/");
 	}
 
+	@Test
+	public void testJarURL() {
+		String desc = "File in JDK source: ";
+		final String JdkFile = JAVA_HOME + "/lib/src.zip!/java.base/java/";
+
+		assertSimplePathDetection(desc, JdkFile + "lang/Thread.java");
+
+		for (final String protocol : getJarFileProtocols(JAVA_HOME)) {
+			assertSimplePathDetection(desc, protocol + JdkFile + "io/File.java");
+		}
+
+		desc = "File in Jar: ";
+		String file = "gradle/wrapper/gradle-wrapper.jar!/org/gradle/cli/CommandLineOption.class";
+		assertSimplePathDetection(desc, file);
+		assertSimplePathDetection(desc, file + ":31:26", 31, 26);
+
+		file = "jar:file:/H:/maven/com/jetbrains/intellij/idea/ideaIC/2021.2.1/ideaIC-2021.2.1/lib/slf4j.jar!/org/slf4j/impl/StaticLoggerBinder.class";
+		assertPathDetection(String.format("SLF4J: Found binding in [%s]", file), file);
+
+		file = "jar:https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.23/kotlin-stdlib-common-1.9.23.jar";
+		assertURLDetection("Remote Jar File: " + file, file);
+	}
+
 	private void assertFilePathDetection(@NotNull final String line, @NotNull final String... expected) {
 		for (final String protocol : getFileProtocols(line)) {
 			final String[] expected2 = Stream.of(expected).map(s -> parseTemplate(s, protocol)).toArray(String[]::new);
 			assertPathDetection(parseTemplate(line, protocol), expected2);
 		}
+	}
+
+	private void assertSimplePathDetection(@NotNull final String desc, @NotNull final String expected) {
+		assertPathDetection(desc + expected, expected);
+	}
+
+	private void assertSimplePathDetection(@NotNull final String desc, @NotNull final String expected, final int expectedRow, final int expectedCol) {
+		assertPathDetection(desc + expected, expected, expectedRow, expectedCol);
 	}
 
 	private List<FileLinkMatch> assertPathDetection(@NotNull final String line, @NotNull final String... expected) {
@@ -463,6 +497,8 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 
 	private void assertURLDetection(final String line, final String expected) {
+		System.out.println(line);
+
 		AwesomeLinkFilter filter = new AwesomeLinkFilter(getProject());
 
 		// Test only detecting file paths - no file existence check

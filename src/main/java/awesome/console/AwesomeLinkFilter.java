@@ -1,5 +1,6 @@
 package awesome.console;
 
+import static awesome.console.util.FileUtils.JAR_PROTOCOL;
 import static awesome.console.util.FileUtils.isAbsolutePath;
 import static awesome.console.util.FileUtils.isUnixAbsolutePath;
 import static awesome.console.util.FileUtils.isWindowsAbsolutePath;
@@ -93,22 +94,37 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	public static final String REGEX_DRIVE = String.format("(?i:~|/?[a-z]:)(?=%s)", REGEX_SEPARATOR);
 
 	/**
-	 * URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
-	 * <p>
-	 * ref: https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
-	 * <p>
-	 * Note: The authority component in URI can be empty {@code `//`}.
+	 * <b>URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]</b>
+	 *
+	 * <p>ref: <a href="https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax">Uniform Resource Identifier - Syntax</a>
+	 *
+	 * <br><br>
+	 * Note: The optional <b>authority component</b> in {@code URI} can be empty {@code `//`}.
+	 *
+	 * <pre>{@code
+	 * - file:C:/         - no authority component
+	 * - file:/C:/        - leading slash added by slashify
+	 * - file://C:/       - empty authority component `//`
+	 * - file:///C:/      - leading slash added by slashify
+	 * }</pre>
+	 *
+	 * <p>The syntax of a JAR URL is:
 	 *
 	 * <pre>
-	 * - file:C:/         - no authority component
-	 * - file:/C:/        - leading slash added by {@code slashify}
-	 * - file://C:/       - empty authority component {@code `//`}
-	 * - file:///C:/      - leading slash added by {@code slashify}
+	 * {@code jar:<url>!/{entry}}
 	 * </pre>
 	 *
+	 * <p>for example:
+	 *
+	 * <pre>{@code
+	 * - jar:http://www.foo.com/bar/baz.jar!/COM/foo/Quux.class
+	 * - jar:file:/home/duke/duke.jar!/
+	 * }</pre>
+	 *
 	 * @see java.net.URI
+	 * @see java.net.JarURLConnection
 	 */
-	public static final String REGEX_PROTOCOL = String.format("%s{2,}:(?://)?", REGEX_LETTER);
+	public static final String REGEX_PROTOCOL = String.format("(?:%s{2,}:(?://)?)+", REGEX_LETTER);
 
 	public static final String REGEX_DOTS_PATH = "(?<=^|[\\s/\\\\])\\.+";
 
@@ -144,7 +160,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
-			"(?<link>[(']?(?<protocol>(([a-zA-Z]+):)?([/\\\\~]))(?<path>([-.!~*\\\\'()\\w;/?:@&=+$,%#]" + DWC + "?)+))",
+			"(?<link>[(']?(?<protocol>((jar:)?([a-zA-Z]+):)?([/\\\\~]))(?<path>([-.!~*\\\\'()\\w;/?:@&=+$,%#]" + DWC + "?)+))",
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern STACK_TRACE_ELEMENT_PATTERN = Pattern.compile("^[\\w|\\s]*at\\s+(.+)\\.(.+)\\((.+\\.(java|kts?)):(\\d+)\\)");
@@ -266,11 +282,17 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 		final List<URLLinkMatch> matches = detectURLs(line);
 
 		for (final URLLinkMatch match : matches) {
-			if (shouldIgnore(match.match)) {
+			String url = match.match;
+			if (shouldIgnore(url)) {
 				continue;
 			}
 
-			final String file = getFileFromUrl(match.match);
+			// jar:http(s)://
+			if (url.startsWith(JAR_PROTOCOL)) {
+				url = url.substring(JAR_PROTOCOL.length());
+			}
+
+			final String file = getFileFromUrl(url);
 
 			if (null != file && !FileUtils.quickExists(file)) {
 				continue;
@@ -279,7 +301,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 					new Result(
 							startPoint + match.start,
 							startPoint + match.end,
-							new OpenUrlHyperlinkInfo(match.match))
+							new OpenUrlHyperlinkInfo(url))
 			);
 		}
 		return results;
@@ -675,7 +697,8 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			String protocol = RegexUtils.tryMatchGroup(fileMatcher, "protocol");
 			if (null != protocol) {
 				protocol = protocol.toLowerCase();
-				if (Stream.of("file:").anyMatch(protocol::startsWith)) {
+				if (Stream.of("file:", JAR_PROTOCOL).anyMatch(protocol::startsWith)) {
+					// TODO not support `jar:http(s)://`
 					// match = match.replace(protocol, "");
 					path = path.substring(protocol.length());
 				} else {

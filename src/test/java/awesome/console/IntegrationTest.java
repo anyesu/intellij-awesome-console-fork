@@ -1,6 +1,10 @@
 package awesome.console;
 
+import java.util.stream.Stream;
+
 public class IntegrationTest {
+
+	public static final String JAVA_HOME = System.getProperty("java.home").replace('\\', '/');
 
 	public static final String[] FILE_PROTOCOLS_WINDOWS = new String[]{"file:", "file:/", "file://", "file:///"};
 
@@ -139,10 +143,7 @@ public class IntegrationTest {
 		System.out.println("--> C:\\integration\\file1.java:19:3");
 		System.out.println("\u001b[31mWARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/C:/integration/file1.java) to field java.io.DeleteOnExitHook.files\u001b[0m");
 		System.out.println("\u001b[31mWARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/src/test/resources/file1.java) to field java.io.DeleteOnExitHook.files\u001b[0m");
-		String currentDirectory = System.getProperty("user.dir").replace('\\', '/');
-		if (!currentDirectory.startsWith("/")) {
-			currentDirectory = "/" + currentDirectory;
-		}
+		String currentDirectory = slashify(System.getProperty("user.dir").replace('\\', '/'));
 		System.out.printf("\u001b[31m> There were failing tests. See the report at: file://%s/build/reports/tests/test/index.html\u001b[0m\n", currentDirectory);
 
 		System.out.println("git console log: \u001b[31mwarning: LF will be replaced by CRLF in README.md.\u001b[0m");
@@ -157,10 +158,20 @@ public class IntegrationTest {
 		System.out.println("Path end with a dot: src/test/resources/subdir...");
 
 		System.out.println("Gradle build task failed with an exception: Build file 'build.gradle' line: 14");
+
+		testJarURL();
+	}
+
+	private static String slashify(final String path) {
+		return path.startsWith("/") ? path : "/" + path;
 	}
 
 	public static String[] getFileProtocols(final String path) {
 		return path.contains(":/") ? FILE_PROTOCOLS_WINDOWS : FILE_PROTOCOLS_UNIX;
+	}
+
+	public static String[] getJarFileProtocols(final String path) {
+		return Stream.concat(Stream.of("jar:", "jar://"), Stream.of(getFileProtocols(path)).map(s -> "jar:" + s)).toArray(String[]::new);
 	}
 
 	public static String parseTemplate(final String s, final String protocol) {
@@ -218,5 +229,27 @@ public class IntegrationTest {
 					String.format("%s%s{file:}C:/Windows/Temp%s blabla", desc, start, end)
 			);
 		}
+	}
+
+	private static void testJarURL() {
+		String desc = "File in JDK source: ";
+		final String JdkFile = JAVA_HOME + "/lib/src.zip!/java.base/java/";
+
+		System.out.println(desc + JdkFile + "lang/Thread.java");
+
+		for (final String protocol : getJarFileProtocols(JAVA_HOME)) {
+			System.out.println(desc + protocol + JdkFile + "io/File.java");
+		}
+
+		desc = "File in Jar: ";
+		String file = "gradle/wrapper/gradle-wrapper.jar!/org/gradle/cli/CommandLineOption.class";
+		System.out.println(desc + file);
+		System.out.println(desc + file + ":31:26");
+
+		file = "jar:file:/H:/maven/com/jetbrains/intellij/idea/ideaIC/2021.2.1/ideaIC-2021.2.1/lib/slf4j.jar!/org/slf4j/impl/StaticLoggerBinder.class";
+		System.out.printf("SLF4J: Found binding in [%s]\n", file);
+
+		file = "jar:https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.23/kotlin-stdlib-common-1.9.23.jar";
+		System.out.println("\u001b[33mRemote Jar File\u001b[0m: " + file);
 	}
 }
