@@ -160,7 +160,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern URL_PATTERN = Pattern.compile(
-			"(?<link>[(']?(?<protocol>((jar:)?([a-zA-Z]+):)?([/\\\\~]))(?<path>([-.!~*\\\\'()\\w;/?:@&=+$,%#]" + DWC + "?)+))",
+			"(?<link>[(']?(?<protocol>((jar:)?([a-zA-Z]+):)([/\\\\~]))(?<path>([-.!~*\\\\'()\\w;/?:@&=+$,%#]" + DWC + "?)+))",
 			Pattern.UNICODE_CHARACTER_CLASS);
 
 	public static final Pattern STACK_TRACE_ELEMENT_PATTERN = Pattern.compile("^[\\w|\\s]*at\\s+(.+)\\.(.+)\\((.+\\.(java|kts?)):(\\d+)\\)");

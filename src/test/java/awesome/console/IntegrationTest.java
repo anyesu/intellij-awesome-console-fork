@@ -70,9 +70,7 @@ public class IntegrationTest {
 		System.out.println("scala class name [awesome.console.IntegrationTest$:4]");
 		System.out.println("C:/project/node_modules/typescript/lib/lib.webworker.d.ts:1930:6:");
 
-		System.out.println();
-		System.out.println("Just a file in user's home directory: ~/.gradle ");
-		System.out.println("Just a file in user's home directory: ~\\.gradle ");
+		testFileInHomeDirectory();
 
 		System.out.println("Path contains \u001b[35mdots\u001b[0m: ./src/test/resources/subdir/./file1.java");
 		System.out.println("Path contains \u001b[35mdots\u001b[0m: ./src/test/resources/subdir/../file1.java");
@@ -161,6 +159,7 @@ public class IntegrationTest {
 		System.out.println("Gradle build task failed with an exception: Build file 'build.gradle' line: 14");
 
 		testJarURL();
+		testTypeScriptCompiler();
 	}
 
 	private static String slashify(final String path) {
@@ -188,6 +187,7 @@ public class IntegrationTest {
 	}
 
 	private static void testPathSeparatedByCommaOrSemicolon() {
+		System.out.println();
 		final String[] paths = new String[]{
 				"C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java",
 				"C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java",
@@ -208,6 +208,7 @@ public class IntegrationTest {
 	}
 
 	private static void testPathSurroundedBy() {
+		System.out.println();
 		final String[] files = new String[]{"file1.java", "C:\\integration\\file1.java", "C:/integration/file1.java", "/tmp/file1.java"};
 		final String desc = "Path surrounded by: ";
 
@@ -233,6 +234,7 @@ public class IntegrationTest {
 	}
 
 	private static void testJarURL() {
+		System.out.println();
 		String desc = "File in JDK source: ";
 		final String JdkFile = JAVA_HOME + "/lib/src.zip!/java.base/java/";
 
@@ -252,5 +254,27 @@ public class IntegrationTest {
 
 		file = "jar:https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.23/kotlin-stdlib-common-1.9.23.jar";
 		System.out.println("\u001b[33mRemote Jar File\u001b[0m: " + file);
+	}
+
+	private static void testFileInHomeDirectory() {
+		System.out.println();
+		final String[] files = new String[]{"~", "~/.gradle", "~\\.gradle"};
+		String desc = "Just a file in user's home directory: ";
+
+		for (final String file : files) {
+			System.out.println(desc + file);
+		}
+
+		System.out.println("\u001b[33mshould not be highlighted\u001b[0m: " + "~~~~");
+	}
+
+	private static void testTypeScriptCompiler() {
+		System.out.println();
+		System.out.println("error TS18003: No inputs were found in config file 'tsconfig.json'.");
+
+		System.out.println("file1.ts:5:13 - error TS2475: 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.");
+		System.out.println("5 console.log(Test);");
+		System.out.println("              ~~~~");
+		System.out.println("Found 1 error in file1.ts:5");
 	}
 }

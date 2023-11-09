@@ -1,4 +1,4 @@
-FILES=file1.cs file1.py file1.java file_with.special-chars.js subdir/file1.java 中.txt tsconfig.json
+FILES=file1.ts file1.cs file1.py file1.java file_with.special-chars.js subdir/file1.java 中.txt tsconfig.json
 
 test-files:
 	rm -rf src/test/resources/*

@@ -8,6 +8,7 @@ import static awesome.console.IntegrationTest.parseTemplate;
 import awesome.console.match.FileLinkMatch;
 import awesome.console.match.URLLinkMatch;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,9 +21,18 @@ import org.junit.runners.JUnit4;
 /**
  * ref: https://github.com/JetBrains/intellij-community/blob/212.5080/platform/testFramework/src/com/intellij/testFramework/UsefulTestCase.java#L82-L83
  */
-@SuppressWarnings({"HttpUrlsUsage", "SameParameterValue"})
+@SuppressWarnings({"HttpUrlsUsage", "SameParameterValue", "unused"})
 @RunWith(JUnit4.class)
 public class AwesomeLinkFilterTest extends BasePlatformTestCase {
+
+	private AwesomeLinkFilter filter;
+
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+		filter = new AwesomeLinkFilter(getProject());
+	}
+
 	@Test
 	public void testFileWithoutDirectory() {
 		assertPathDetection("Just a file: test.txt", "test.txt");
@@ -41,7 +51,17 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testFileInHomeDirectory() {
-		assertPathDetection("Another file: ~/testme.txt", "~/testme.txt");
+		final String[] files = new String[]{"~", "~/.gradle", "~\\.gradle"};
+		String desc = "Just a file in user's home directory: ";
+
+		for (final String file : files) {
+			assertSimplePathDetection(desc, file);
+		}
+
+		desc = "should not be highlighted: ";
+		// `~~~~` is recognized as a path but actually checks if the file exists
+		assertSimplePathDetection(desc, "~~~~");
+		assertUrlNoMatches(desc, "~~~~");
 	}
 
 	@Test
@@ -165,16 +185,18 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testURLFILEWithoutSchemeUnixStyle() {
-		assertURLDetection("omfg something: /root/something yay", "/root/something");
+		assertPathDetection("omfg something: /root/something yay", "/root/something");
 	}
 
 	@Test
 	public void testURLFILEWithoutSchemeWindowsStyle() {
+		assertPathDetection("omfg something: C:\\root\\something.java yay", "C:\\root\\something.java");
 		assertURLDetection("omfg something: C:\\root\\something.java yay", "C:\\root\\something.java");
 	}
 
 	@Test
 	public void testURLFILEWithoutSchemeWindowsStyleWithMixedSlashes() {
+		assertPathDetection("omfg something: C:\\root/something.java yay", "C:\\root/something.java");
 		assertURLDetection("omfg something: C:\\root/something.java yay", "C:\\root/something.java");
 	}
 
@@ -200,6 +222,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testURLInsideBrackets() {
+		assertPathDetection("something (C:\\root\\something.java) blabla", "C:\\root\\something.java");
 		assertURLDetection("something (C:\\root\\something.java) blabla", "C:\\root\\something.java");
 	}
 
@@ -392,13 +415,26 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	@Test
+	public void testTypeScriptCompiler() {
+		assertPathDetection("error TS18003: No inputs were found in config file 'tsconfig.json'.", "tsconfig.json");
+
+		assertPathDetection(
+				"file1.ts:5:13 - error TS2475: 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.",
+				"file1.ts:5:13",
+				5, 13
+		);
+		assertPathDetection("5 console.log(Test);");
+		assertUrlNoMatches("", "              ~~~~");
+		assertPathDetection("Found 1 error in file1.ts:5", "file1.ts:5", 5);
+	}
+
+	@Test
 	public void testPathBoundary() {
 		assertPathDetection("warning: LF will be replaced by CRLF in README.md.", "README.md");
 		assertPathDetection(
 				"git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --",
 				"src/main/java/awesome/console/AwesomeLinkFilter.java"
 		);
-		assertPathDetection("error TS18003: No inputs were found in config file 'tsconfig.json'.", "tsconfig.json");
 
 		assertPathDetection(".", ".");
 		assertPathDetection("..", "..");
@@ -469,10 +505,24 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection(desc + expected, expected, expectedRow, expectedCol);
 	}
 
+	private void assertPathNoMatches(@NotNull final String desc, @NotNull final String... lines) {
+		for (final String line : lines) {
+			System.out.println(desc + line);
+			List<String> results = filter.detectPaths(line).stream().map(it -> it.match).collect(Collectors.toList());
+			assertSameElements(results, Collections.emptyList());
+		}
+	}
+
+	private void assertUrlNoMatches(@NotNull final String desc, @NotNull final String... lines) {
+		for (final String line : lines) {
+			System.out.println(desc + line);
+			List<String> results = filter.detectURLs(line).stream().map(it -> it.match).collect(Collectors.toList());
+			assertSameElements(results, Collections.emptyList());
+		}
+	}
+
 	private List<FileLinkMatch> assertPathDetection(@NotNull final String line, @NotNull final String... expected) {
 		System.out.println(line);
-
-		AwesomeLinkFilter filter = new AwesomeLinkFilter(getProject());
 
 		// Test only detecting file paths - no file existence check
 		List<FileLinkMatch> results = filter.detectPaths(line);
@@ -504,8 +554,6 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	private void assertURLDetection(final String line, final String expected) {
 		System.out.println(line);
-
-		AwesomeLinkFilter filter = new AwesomeLinkFilter(getProject());
 
 		// Test only detecting file paths - no file existence check
 		List<URLLinkMatch> results = filter.detectURLs(line);
