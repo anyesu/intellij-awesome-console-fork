@@ -430,12 +430,6 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testPathBoundary() {
-		assertPathDetection("warning: LF will be replaced by CRLF in README.md.", "README.md");
-		assertPathDetection(
-				"git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --",
-				"src/main/java/awesome/console/AwesomeLinkFilter.java"
-		);
-
 		assertPathDetection(".", ".");
 		assertPathDetection("..", "..");
 		assertPathDetection("Path end with a dot: file1.java.", "file1.java");
@@ -488,6 +482,20 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 		file = "jar:https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.23/kotlin-stdlib-common-1.9.23.jar";
 		assertURLDetection("Remote Jar File: " + file, file);
+	}
+
+	@Test
+	public void testGit() {
+		System.out.println("Git console log: ");
+		assertPathDetection("warning: LF will be replaced by CRLF in README.md.", "README.md");
+		assertPathDetection(
+				"git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --",
+				"src/main/java/awesome/console/AwesomeLinkFilter.java"
+		);
+		assertURLDetection(
+				"fatal: unable to access 'https://github.com/anthraxx/intellij-awesome-console.git/': schannel: failed to receive handshake, SSL/TLS connection failed",
+				"https://github.com/anthraxx/intellij-awesome-console.git/"
+		);
 	}
 
 	private void assertFilePathDetection(@NotNull final String line, @NotNull final String... expected) {

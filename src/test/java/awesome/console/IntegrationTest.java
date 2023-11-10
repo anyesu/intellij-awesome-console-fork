@@ -145,8 +145,6 @@ public class IntegrationTest {
 		String currentDirectory = slashify(System.getProperty("user.dir").replace('\\', '/'));
 		System.out.printf("\u001b[31m> There were failing tests. See the report at: file://%s/build/reports/tests/test/index.html\u001b[0m\n", currentDirectory);
 
-		System.out.println("git console log: \u001b[31mwarning: LF will be replaced by CRLF in README.md.\u001b[0m");
-		System.out.println("git console log: git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --");
 		System.out.println("\u001b[31merror\u001b[0m \u001b[37mTS18003\u001b[0m: No inputs were found in config file 'tsconfig.json'. ");
 		System.out.println(".");
 		System.out.println("..");
@@ -160,6 +158,7 @@ public class IntegrationTest {
 
 		testJarURL();
 		testTypeScriptCompiler();
+		testGit();
 	}
 
 	private static String slashify(final String path) {
@@ -276,5 +275,13 @@ public class IntegrationTest {
 		System.out.println("5 console.log(Test);");
 		System.out.println("              ~~~~");
 		System.out.println("Found 1 error in file1.ts:5");
+	}
+
+	private static void testGit() {
+		System.out.println();
+		System.out.println("Git console log: ");
+		System.out.println("\u001b[31mwarning: LF will be replaced by CRLF in README.md.\u001b[0m");
+		System.out.println("git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --");
+		System.out.println("fatal: unable to access 'https://github.com/anthraxx/intellij-awesome-console.git/': schannel: failed to receive handshake, SSL/TLS connection failed");
 	}
 }
