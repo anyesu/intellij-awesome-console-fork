@@ -102,17 +102,7 @@ public class IntegrationTest {
 		System.out.println("\u001b[33mPath with unclosed quotes\u001b[0m: \"src/test/resources/中文 空格.txt]");
 		System.out.println("\u001b[33mPath with unclosed quotes\u001b[0m: \"src/test/resources/中文 空格.txt   \"src/test/resources/中文 空格.txt\"");
 
-		// TODO support paths with spaces in the current working directory of Windows CMD and PowerShell
-		System.out.println("\u001b[33mWindows CMD console:\u001b[0m");
-		System.out.println("C:\\Windows\\Temp>");
-		System.out.println("C:\\Windows\\Temp>echo hello");
-		System.out.println("C:\\Program Files (x86)\\Windows NT>powershell");
-
-		System.out.println("\u001b[33mWindows PowerShell console:\u001b[0m");
-		System.out.println("PS C:\\Windows\\Temp> ");
-		System.out.println("PS C:\\Windows\\Temp> echo hello");
-		System.out.println("PS C:\\Program Files (x86)\\Windows NT> echo hello");
-
+		testWindowsCommandLineShell();
 		testPathSeparatedByCommaOrSemicolon();
 
 		System.out.println("Java stackTrace: at awesome.console.AwesomeLinkFilterTest.testFileWithoutDirectory(AwesomeLinkFilterTest.java:14)");
@@ -163,6 +153,10 @@ public class IntegrationTest {
 
 	private static String slashify(final String path) {
 		return path.startsWith("/") ? path : "/" + path;
+	}
+
+	private static String yellow(final String s) {
+		return String.format("\u001b[33m%s\u001b[0m", s);
 	}
 
 	public static String[] getFileProtocols(final String path) {
@@ -283,5 +277,27 @@ public class IntegrationTest {
 		System.out.println("\u001b[31mwarning: LF will be replaced by CRLF in README.md.\u001b[0m");
 		System.out.println("git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --");
 		System.out.println("fatal: unable to access 'https://github.com/anthraxx/intellij-awesome-console.git/': schannel: failed to receive handshake, SSL/TLS connection failed");
+	}
+
+	private static void testWindowsCommandLineShell() {
+		System.out.println();
+		System.out.println(yellow("TODO support paths with spaces in the current working directory of Windows CMD and PowerShell"));
+		System.out.println(yellow("Windows CMD console:"));
+		System.out.println("C:\\Windows\\Temp>");
+		System.out.println("C:\\Windows\\Temp>echo hello");
+		System.out.println("C:\\Windows\\Temp>..");
+		System.out.println("C:\\Windows\\Temp> ..");
+		System.out.println("C:\\Windows\\Temp>./build.gradle");
+		System.out.println("C:\\Windows\\Temp>../intellij-awesome-console");
+		System.out.println("C:\\Program Files (x86)\\Windows NT>powershell");
+
+		System.out.println(yellow("Windows PowerShell console:"));
+		System.out.println("PS C:\\Windows\\Temp> ");
+		System.out.println("PS C:\\Windows\\Temp> echo hello");
+		System.out.println("PS C:\\Windows\\Temp>..");
+		System.out.println("PS C:\\Windows\\Temp> ..");
+		System.out.println("PS C:\\Windows\\Temp>./build.gradle");
+		System.out.println("PS C:\\Windows\\Temp>../intellij-awesome-console");
+		System.out.println("PS C:\\Program Files (x86)\\Windows NT> echo hello");
 	}
 }

@@ -498,6 +498,29 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		);
 	}
 
+	@Test
+	public void testWindowsCommandLineShell() {
+		// TODO support paths with spaces in the current working directory of Windows CMD and PowerShell
+
+		System.out.println("Windows CMD console:");
+		assertPathDetection("C:\\Windows\\Temp>", "C:\\Windows\\Temp");
+		assertPathDetection("C:\\Windows\\Temp>echo hello", "C:\\Windows\\Temp");
+		assertPathDetection("C:\\Windows\\Temp>..", "C:\\Windows\\Temp", "..");
+		assertPathDetection("C:\\Windows\\Temp> ..", "C:\\Windows\\Temp", "..");
+		assertPathDetection("C:\\Windows\\Temp>./build.gradle", "C:\\Windows\\Temp", "./build.gradle");
+		assertPathDetection("C:\\Windows\\Temp>../intellij-awesome-console", "C:\\Windows\\Temp", "../intellij-awesome-console");
+		// assertPathDetection("C:\\Program Files (x86)\\Windows NT>powershell", "C:\\Program Files (x86)\\Windows NT");
+
+		System.out.println("Windows PowerShell console:");
+		assertPathDetection("PS C:\\Windows\\Temp> ", "C:\\Windows\\Temp");
+		assertPathDetection("PS C:\\Windows\\Temp> echo hello", "C:\\Windows\\Temp");
+		assertPathDetection("PS C:\\Windows\\Temp>..", "C:\\Windows\\Temp", "..");
+		assertPathDetection("PS C:\\Windows\\Temp> ..", "C:\\Windows\\Temp", "..");
+		assertPathDetection("PS C:\\Windows\\Temp>./build.gradle", "C:\\Windows\\Temp", "./build.gradle");
+		assertPathDetection("PS C:\\Windows\\Temp>../intellij-awesome-console", "C:\\Windows\\Temp", "../intellij-awesome-console");
+		// assertPathDetection("PS C:\\Program Files (x86)\\Windows NT> echo hello", "C:\\Program Files (x86)\\Windows NT");
+	}
+
 	private void assertFilePathDetection(@NotNull final String line, @NotNull final String... expected) {
 		for (final String protocol : getFileProtocols(line)) {
 			final String[] expected2 = Stream.of(expected).map(s -> parseTemplate(s, protocol)).toArray(String[]::new);

@@ -126,7 +126,7 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	 */
 	public static final String REGEX_PROTOCOL = String.format("(?:%s{2,}:(?://)?)+", REGEX_LETTER);
 
-	public static final String REGEX_DOTS_PATH = "(?<=^|[\\s/\\\\])\\.+";
+	public static final String REGEX_DOTS_PATH = "(?<=^|[^A-Za-z])\\.+";
 
 	public static final String REGEX_FILE_NAME = String.format(
 			"((?!%s)(?:%s))+(?<!%s)",
