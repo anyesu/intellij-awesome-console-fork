@@ -482,6 +482,11 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 		file = "jar:https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.23/kotlin-stdlib-common-1.9.23.jar";
 		assertURLDetection("Remote Jar File: " + file, file);
+
+		// `!/xxx` is an invalid Jar URL, but is a legal path. Check if the file exists.
+		desc = "Invalid Jar URL: ";
+		assertSimplePathDetection(desc, "gradle/wrapper/!/org/gradle/cli/CommandLineOption.class");
+		assertSimplePathDetection(desc, "!/org/gradle/cli/CommandLineOption.class");
 	}
 
 	@Test

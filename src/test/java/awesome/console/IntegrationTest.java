@@ -246,7 +246,11 @@ public class IntegrationTest {
 		System.out.printf("SLF4J: Found binding in [%s]\n", file);
 
 		file = "jar:https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.23/kotlin-stdlib-common-1.9.23.jar";
-		System.out.println("\u001b[33mRemote Jar File\u001b[0m: " + file);
+		System.out.println(yellow("Remote Jar File: ") + file);
+
+		desc = yellow("Invalid Jar URL: ");
+		System.out.println(desc + "gradle/wrapper/!/org/gradle/cli/CommandLineOption.class");
+		System.out.println(desc + "!/org/gradle/cli/CommandLineOption.class");
 	}
 
 	private static void testFileInHomeDirectory() {

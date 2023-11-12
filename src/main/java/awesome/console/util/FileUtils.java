@@ -114,15 +114,20 @@ public class FileUtils {
      * @see java.net.JarURLConnection
      */
     public static boolean quickExists(@NotNull String path) {
-        Pair<String, String> paths = splitJarPath(normalizeSlashes(path));
-        if (null != paths) {
-            // is jar path
-            path = paths.first;
-        }
         // Finding the UNC path will access the network,
         // which takes a long time and causes the UI to freeze.
         // ref: https://stackoverflow.com/a/48554407
-        return !isUncPath(path) && (isReparsePointOrSymlink(path) || new File(path).exists());
+        if (isUncPath(path)) {
+            return false;
+        }
+
+        Pair<String, String> paths = splitJarPath(normalizeSlashes(path));
+        if (null != paths && new File(paths.first).isFile()) {
+            // is jar file path
+            return true;
+        }
+
+        return isReparsePointOrSymlink(path) || new File(path).exists();
     }
 
     /**
