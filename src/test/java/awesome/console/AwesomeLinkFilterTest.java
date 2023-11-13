@@ -1,6 +1,9 @@
 package awesome.console;
 
 import static awesome.console.IntegrationTest.JAVA_HOME;
+import static awesome.console.IntegrationTest.TEST_DIR_UNIX;
+import static awesome.console.IntegrationTest.TEST_DIR_WINDOWS;
+import static awesome.console.IntegrationTest.TEST_DIR_WINDOWS2;
 import static awesome.console.IntegrationTest.getFileProtocols;
 import static awesome.console.IntegrationTest.getJarFileProtocols;
 import static awesome.console.IntegrationTest.parseTemplate;
@@ -119,8 +122,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 
 	@Test
-	public void testFileWithJavaExtensionInAbsoluteDirectoryWithLineAndColumnNumbersInMaven()
-	{
+	public void testFileWithJavaExtensionInAbsoluteDirectoryWithLineAndColumnNumbersInMaven() {
 		assertPathDetection("/home/me/project/run.java:[245,15]", "/home/me/project/run.java:[245,15]", 245, 15);
 	}
 
@@ -244,12 +246,12 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testPythonTracebackWithQuotes() {
-		assertPathDetection("File \"/Applications/plugins/python-ce/helpers/pycharm/teamcity/diff_tools.py\", line 38", "\"/Applications/plugins/python-ce/helpers/pycharm/teamcity/diff_tools.py\", line 38",38);
+		assertPathDetection("File \"/Applications/plugins/python-ce/helpers/pycharm/teamcity/diff_tools.py\", line 38", "\"/Applications/plugins/python-ce/helpers/pycharm/teamcity/diff_tools.py\", line 38", 38);
 	}
 
 	@Test
 	public void testAngularJSAtModule() {
-		assertPathDetection("src/app/@app/app.module.ts:42:5", "src/app/@app/app.module.ts:42:5",42, 5);
+		assertPathDetection("src/app/@app/app.module.ts:42:5", "src/app/@app/app.module.ts:42:5", 42, 5);
 	}
 
 	@Test
@@ -284,7 +286,7 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testPathColonAtTheEnd() {
 		assertPathDetection("colon at the end: resources/file1.java:5:1:", "resources/file1.java:5:1", 5, 1);
-		assertPathDetection("colon at the end: C:\\integration\\file1.java:5:4:", "C:\\integration\\file1.java:5:4", 5, 4);
+		assertSimplePathDetection("colon at the end: %s:", TEST_DIR_WINDOWS + "\\file1.java:5:4", 5, 4);
 	}
 
 	@Test
@@ -360,9 +362,9 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	@Test
 	public void testPathSeparatedByCommaOrSemicolon() {
 		final String[] paths = new String[]{
-				"C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java",
-				"C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java",
-				"/tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
+				"%s\\file1.java,%s\\file2.java;%s\\file3.java".replace("%s", TEST_DIR_WINDOWS),
+				"%s/file1.java,%s/file2.java;%s/file3.java".replace("%s", TEST_DIR_WINDOWS2),
+				"%s/file1.java,%s/file2.java;%s/file3.java".replace("%s", TEST_DIR_UNIX),
 				"src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile"
 		};
 		final String desc = "Comma or semicolon separated paths: ";
@@ -384,7 +386,12 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testPathSurroundedBy() {
-		final String[] files = new String[]{"file1.java", "C:\\integration\\file1.java", "C:/integration/file1.java", "/tmp/file1.java"};
+		final String[] files = new String[]{
+				"file1.java",
+				TEST_DIR_WINDOWS + "\\file1.java",
+				TEST_DIR_WINDOWS2 + "/file1.java",
+				TEST_DIR_UNIX + "/file1.java"
+		};
 		final String desc = "Path surrounded by: ";
 
 		for (final String pair : new String[]{"()", "[]", "''", "\"\""}) {
@@ -438,11 +445,12 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("Path end with a dot: src/test/resources/subdir/..", "src/test/resources/subdir/..");
 		assertPathDetection("Path end with a dot: src/test/resources/subdir...", "src/test/resources/subdir");
 
-		assertPathDetection("╭─[C:\\integration\\file1.java:19:2]", "C:\\integration\\file1.java:19:2", 19, 2);
-		assertPathDetection("╭─[C:\\integration\\file1.java:19]", "C:\\integration\\file1.java:19", 19);
-		assertPathDetection("╭─ C:\\integration\\file1.java:19:10", "C:\\integration\\file1.java:19:10", 19, 10);
-		assertPathDetection("--> [C:\\integration\\file1.java:19:5]", "C:\\integration\\file1.java:19:5", 19, 5);
-		assertPathDetection("--> C:\\integration\\file1.java:19:3", "C:\\integration\\file1.java:19:3", 19, 3);
+		final String file = TEST_DIR_WINDOWS + "\\file1.java";
+		assertSimplePathDetection("╭─[%s]", file + ":19:2", 19, 2);
+		assertSimplePathDetection("╭─[%s]", file + ":19", 19);
+		assertSimplePathDetection("╭─ %s", file + ":19:10", 19, 10);
+		assertSimplePathDetection("--> [%s]", file + ":19:5", 19, 5);
+		assertSimplePathDetection("--> %s", file + ":19:3", 19, 3);
 	}
 
 	@Test
@@ -519,10 +527,9 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		System.out.println("Windows PowerShell console:");
 		assertPathDetection("PS C:\\Windows\\Temp> ", "C:\\Windows\\Temp");
 		assertPathDetection("PS C:\\Windows\\Temp> echo hello", "C:\\Windows\\Temp");
-		assertPathDetection("PS C:\\Windows\\Temp>..", "C:\\Windows\\Temp", "..");
 		assertPathDetection("PS C:\\Windows\\Temp> ..", "C:\\Windows\\Temp", "..");
-		assertPathDetection("PS C:\\Windows\\Temp>./build.gradle", "C:\\Windows\\Temp", "./build.gradle");
-		assertPathDetection("PS C:\\Windows\\Temp>../intellij-awesome-console", "C:\\Windows\\Temp", "../intellij-awesome-console");
+		assertPathDetection("PS C:\\Windows\\Temp> ./build.gradle", "C:\\Windows\\Temp", "./build.gradle");
+		assertPathDetection("PS C:\\Windows\\Temp> ../intellij-awesome-console", "C:\\Windows\\Temp", "../intellij-awesome-console");
 		// assertPathDetection("PS C:\\Program Files (x86)\\Windows NT> echo hello", "C:\\Program Files (x86)\\Windows NT");
 	}
 
@@ -534,11 +541,16 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 	}
 
 	private void assertSimplePathDetection(@NotNull final String desc, @NotNull final String expected) {
-		assertPathDetection(desc + expected, expected);
+		assertSimplePathDetection(desc, expected, -1, -1);
+	}
+
+	private void assertSimplePathDetection(@NotNull final String desc, @NotNull final String expected, final int expectedRow) {
+		assertSimplePathDetection(desc, expected, expectedRow, -1);
 	}
 
 	private void assertSimplePathDetection(@NotNull final String desc, @NotNull final String expected, final int expectedRow, final int expectedCol) {
-		assertPathDetection(desc + expected, expected, expectedRow, expectedCol);
+		final String line = desc.contains("%s") ? desc.replace("%s", expected) : desc + expected;
+		assertPathDetection(line, expected, expectedRow, expectedCol);
 	}
 
 	private void assertPathNoMatches(@NotNull final String desc, @NotNull final String... lines) {

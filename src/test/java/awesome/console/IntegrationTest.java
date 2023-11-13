@@ -2,7 +2,7 @@ package awesome.console;
 
 import java.util.stream.Stream;
 
-@SuppressWarnings("HttpUrlsUsage")
+@SuppressWarnings({"HttpUrlsUsage", "SameParameterValue"})
 public class IntegrationTest {
 
 	public static final String JAVA_HOME = System.getProperty("java.home").replace('\\', '/');
@@ -11,12 +11,21 @@ public class IntegrationTest {
 
 	public static final String[] FILE_PROTOCOLS_UNIX = new String[]{"file:", "file://"};
 
+	public static final String TEST_DIR_WINDOWS = "C:\\Windows\\Temp\\intellij-awesome-console";
+
+	public static final String TEST_DIR_WINDOWS2 = TEST_DIR_WINDOWS.replace('\\', '/');
+
+	public static final String TEST_DIR_UNIX = "/tmp/intellij-awesome-console";
+
 	public static void main(final String[] args) {
+		String desc;
+		String file;
+
 		System.out.println(AwesomeLinkFilter.FILE_PATTERN);
 		System.out.println(AwesomeLinkFilter.URL_PATTERN);
 		System.out.println("Test in https://regex101.com [ flavor - PCRE* (PHP) ] :");
 		System.out.println(AwesomeLinkFilter.FILE_PATTERN.toString().replace("/", "\\/"));
-		System.out.println("\n\u001b[31mNote: Please ensure that the files corresponding to the following paths exist.\u001b[0m\n");
+		System.out.println(red("\nNote: Please ensure that the files corresponding to the following paths exist.\n"));
 		System.out.println("Just a file: testfile ");
 		System.out.println("Just a file: .gitignore ");
 		System.out.println("Just a file: file1.java");
@@ -47,24 +56,23 @@ public class IntegrationTest {
 		System.out.println("C:\\Windows\\Temp");
 		System.out.println("C:\\Windows/Temp");
 		System.out.println("C:/Windows/Temp");
+		System.out.println("C:/Windows/Temp,");
 		System.out.println("C:\\\\");
 		System.out.println("C:\\");
 		System.out.println("C:/");
-		System.out.println("\u001b[33mC:\u001b[0m");
+		System.out.println(yellow("C:"));
 		System.out.println("[DEBUG] src/test/resources/file1.java:[4,4] cannot find symbol");
 		System.out.println("awesome.console.AwesomeLinkFilter:5");
 		System.out.println("awesome.console.AwesomeLinkFilter.java:50");
 		System.out.println("foo https://en.wikipedia.org/wiki/Parenthesis_(disambiguation) bar");
-		System.out.println("C:/Windows/Temp,");
-		System.out.println("C:/Windows/Temp/test.tsx:5:3");
 		System.out.println("Just a file: src/test/resources/file1.java, line 2, column 2");
 		System.out.println("Just a file: src/test/resources/file1.java, line 2, coL 30");
 		System.out.println("Just a file: src/test/resources/file1.java( 5 ,  4   )    ");
 		System.out.println("Just a file: src/test/resources/file1.java (30 KiB)");
 		printFileProtocols("Just a file with path: {file:}resources/file1.java:5:40");
-		System.out.println("Just a file with path: C:\\integration\\file1.java:5:4");
+		System.out.printf("Just a file with path: %s\\file1.java:5:4\n", TEST_DIR_WINDOWS);
 		System.out.println("colon at the end: resources/file1.java:50:10:");
-		System.out.println("colon at the end: C:\\integration\\file1.java:5:4:");
+		System.out.printf("colon at the end: %s\\file1.java:5:4:\n", TEST_DIR_WINDOWS);
 		System.out.println("unicode 中.txt:5 yay");
 		System.out.println("regular class name [awesome.console.IntegrationTest:40]");
 		System.out.println("scala class name [awesome.console.IntegrationTest$:4]");
@@ -72,35 +80,38 @@ public class IntegrationTest {
 
 		testFileInHomeDirectory();
 
-		System.out.println("Path contains \u001b[35mdots\u001b[0m: ./src/test/resources/subdir/./file1.java");
-		System.out.println("Path contains \u001b[35mdots\u001b[0m: ./src/test/resources/subdir/../file1.java");
-		System.out.println("Path contains \u001b[35mdots\u001b[0m: .../src/test/resources/subdir/./file1.java");
-		System.out.println("Path contains \u001b[35mdots\u001b[0m: ../intellij-awesome-console/src");
+		desc = "Path contains " + magenta("dots");
+		System.out.println(desc + ": ./src/test/resources/subdir/./file1.java");
+		System.out.println(desc + ": ./src/test/resources/subdir/../file1.java");
+		System.out.println(desc + ": .../src/test/resources/subdir/./file1.java");
+		System.out.println(desc + ": ../intellij-awesome-console/src");
 
-		System.out.println("\u001b[33mUNC path should not be highlighted\u001b[0m: \\\\localhost\\c$");
-		System.out.println("\u001b[33mUNC path should not be highlighted\u001b[0m: \\\\server\\share\\folder\\myfile.txt");
-		System.out.println("\u001b[33mUNC path should not be highlighted\u001b[0m: \\\\123.123.123.123\\share\\folder\\myfile.txt");
-		System.out.println("\u001b[33mUNC path should not be highlighted but will be processed by UrlFilter\u001b[0m: file://///localhost/c$");
+		desc = yellow("UNC path should not be highlighted");
+		System.out.println(desc + ": \\\\localhost\\c$");
+		System.out.println(desc + ": \\\\server\\share\\folder\\myfile.txt");
+		System.out.println(desc + ": \\\\123.123.123.123\\share\\folder\\myfile.txt");
+		System.out.println(desc + yellow(" but will be processed by UrlFilter") + ": file://///localhost/c$");
 
-		System.out.println("\u001b[33mPath with space is not highlighted by default\u001b[0m: src/test/resources/中文 空格.txt");
+		System.out.println(yellow("Path with space is not highlighted by default") + ": src/test/resources/中文 空格.txt");
 		System.out.println("Path enclosed in double quotes: \"C:\\Program Files (x86)\\Windows NT\" ");
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\" ");
 		printFileProtocols("Path enclosed in double quotes: \"{file:}src/test/resources/中文 空格.txt\" ");
-		System.out.println("Path enclosed in double quotes ( \u001b[33mshould not be highlighted\u001b[0m ) : \"  src/test/resources/中文 空格.txt  \" ");
+		System.out.printf("Path enclosed in double quotes ( %s ) : \"  src/test/resources/中文 空格.txt  \" \n", yellow("should not be highlighted"));
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/中文 空格.txt\":5:4 ");
-		System.out.println("Path enclosed in double quotes ( \u001b[33mTODO maybe row:col is enclosed in quotes?\u001b[0m ) : \"src/test/resources/中文 空格.txt:5:4\" ");
+		System.out.printf("Path enclosed in double quotes ( %s ) : \"src/test/resources/中文 空格.txt:5:4\" \n", yellow("TODO maybe row:col is enclosed in quotes?"));
 		System.out.println("Path enclosed in double quotes: \"src/test/resources/subdir/file1.java\" ");
-		System.out.println("Path enclosed in double quotes ( \u001b[33mthe file name or folder name start with space or end with space\u001b[0m ) :");
+		System.out.printf("Path enclosed in double quotes ( %s ) :\n", yellow("the file name or folder name start with space or end with space"));
 		System.out.println("    \"src/test/  resources/subdir/file1.java\" ");
 		System.out.println("    \"src/test/resources/subdir/file1.java \" ");
 		System.out.println("    \"src/test/resources/subdir/ file1.java\" ");
 		System.out.println("    \"src/test/resources/subdir /file1.java\" ");
 
-		System.out.println("\u001b[33mPath with unclosed quotes\u001b[0m: \"src/test/resources/中文 空格.txt");
-		System.out.println("\u001b[33mPath with unclosed quotes\u001b[0m: src/test/resources/中文 空格.txt\"");
-		System.out.println("\u001b[33mPath with unclosed quotes\u001b[0m: \"src/test/resources/中文 空格.txt'");
-		System.out.println("\u001b[33mPath with unclosed quotes\u001b[0m: \"src/test/resources/中文 空格.txt]");
-		System.out.println("\u001b[33mPath with unclosed quotes\u001b[0m: \"src/test/resources/中文 空格.txt   \"src/test/resources/中文 空格.txt\"");
+		desc = yellow("Path with unclosed quotes");
+		System.out.println(desc + ": \"src/test/resources/中文 空格.txt");
+		System.out.println(desc + ": src/test/resources/中文 空格.txt\"");
+		System.out.println(desc + ": \"src/test/resources/中文 空格.txt'");
+		System.out.println(desc + ": \"src/test/resources/中文 空格.txt]");
+		System.out.println(desc + ": \"src/test/resources/中文 空格.txt   \"src/test/resources/中文 空格.txt\"");
 
 		testWindowsCommandLineShell();
 		testPathSeparatedByCommaOrSemicolon();
@@ -109,7 +120,7 @@ public class IntegrationTest {
 
 		testPathSurroundedBy();
 
-		System.out.println("\u001b[33mIgnore matches\u001b[0m: ./ . .. ... ./ ../ ././../. / // /// \\ \\\\ \\\\\\");
+		System.out.println(yellow("Ignore matches") + ": ./ . .. ... ./ ../ ././../. / // /// \\ \\\\ \\\\\\");
 
 		System.out.println("Non-indexed files in the project: build/patchedPluginXmlFiles/plugin.xml is not plugin.xml");
 
@@ -117,25 +128,25 @@ public class IntegrationTest {
 		System.out.println("Just a symlink: src/test/resources/symlink/file1.java:10:6");
 		System.out.println("Just a symlink: src/test/resources/invalid-symlink");
 
-		System.out.println("Illegal char: \u001b[33m\u0001file1.java\u001b[0m");
-		System.out.println("Illegal char: \u001b[33m\u001ffile1.java\u001b[0m");
-		System.out.println("Illegal char: \u001b[33m\u0021file1.java\u001b[0m");
-		System.out.println("Illegal char: \u001b[33m\u007ffile1.java\u001b[0m");
+		System.out.println("Illegal char: " + yellow("\u0001file1.java"));
+		System.out.println("Illegal char: " + yellow("\u001ffile1.java"));
+		System.out.println("Illegal char: " + yellow("\u0021file1.java"));
+		System.out.println("Illegal char: " + yellow("\u007ffile1.java"));
 
-		System.out.print("\u001b[33mUse ignore style to prevent this ( \u001b[31m/ gzip\u001b[33m from vite-plugin-compression ) to be highlighted by GrCompilationErrorsFilterProvider\u001b[0m: ");
+		System.out.print(yellow("Use ignore style to prevent this ( ") + red("/ gzip") + yellow(" from vite-plugin-compression ) to be highlighted by GrCompilationErrorsFilterProvider: "));
 		System.out.println("291.23kb / gzip: 44.09kb");
 
-		System.out.println("╭─[C:\\integration\\file1.java:19:2]");
-		System.out.println("╭─[C:\\integration\\file1.java:19]");
-		System.out.println("╭─ C:\\integration\\file1.java:19:10");
-		System.out.println("--> [C:\\integration\\file1.java:19:5]");
-		System.out.println("--> C:\\integration\\file1.java:19:3");
-		System.out.println("\u001b[31mWARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/C:/integration/file1.java) to field java.io.DeleteOnExitHook.files\u001b[0m");
-		System.out.println("\u001b[31mWARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/src/test/resources/file1.java) to field java.io.DeleteOnExitHook.files\u001b[0m");
+		file = TEST_DIR_WINDOWS + "\\file1.java";
+		System.out.printf("╭─[%s:19:2]\n", file);
+		System.out.printf("╭─[%s:19]\n", file);
+		System.out.printf("╭─ %s:19:10\n", file);
+		System.out.printf("--> [%s:19:5]\n", file);
+		System.out.printf("--> %s:19:3\n", file);
+		System.out.printf(red("WARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/%s/file1.java) to field java.io.DeleteOnExitHook.files\n"), TEST_DIR_WINDOWS2);
+		System.out.println(red("WARNING: Illegal reflective access by com.intellij.util.ReflectionUtil (file:/src/test/resources/file1.java) to field java.io.DeleteOnExitHook.files"));
 		String currentDirectory = slashify(System.getProperty("user.dir").replace('\\', '/'));
-		System.out.printf("\u001b[31m> There were failing tests. See the report at: file://%s/build/reports/tests/test/index.html\u001b[0m\n", currentDirectory);
+		System.out.printf(red("> There were failing tests. See the report at: file://%s/build/reports/tests/test/index.html\n"), currentDirectory);
 
-		System.out.println("\u001b[31merror\u001b[0m \u001b[37mTS18003\u001b[0m: No inputs were found in config file 'tsconfig.json'. ");
 		System.out.println(".");
 		System.out.println("..");
 		System.out.println("Path end with a dot: file1.java.");
@@ -155,8 +166,24 @@ public class IntegrationTest {
 		return path.startsWith("/") ? path : "/" + path;
 	}
 
+	private static String ansi16(final String s, final int color) {
+		return String.format("\u001b[%dm%s\u001b[0m", color, s);
+	}
+
+	private static String red(final String s) {
+		return ansi16(s, 31);
+	}
+
 	private static String yellow(final String s) {
-		return String.format("\u001b[33m%s\u001b[0m", s);
+		return ansi16(s, 33);
+	}
+
+	private static String magenta(final String s) {
+		return ansi16(s, 35);
+	}
+
+	private static String white(final String s) {
+		return ansi16(s, 37);
 	}
 
 	public static String[] getFileProtocols(final String path) {
@@ -182,9 +209,9 @@ public class IntegrationTest {
 	private static void testPathSeparatedByCommaOrSemicolon() {
 		System.out.println();
 		final String[] paths = new String[]{
-				"C:\\integration\\file1.java,C:\\integration\\file2.java;C:\\integration\\file3.java",
-				"C:/integration/file1.java,C:/integration/file2.java;C:/integration/file3.java",
-				"/tmp/file1.java,/tmp/file2.java;/tmp/file3.java",
+				"%s\\file1.java,%s\\file2.java;%s\\file3.java".replace("%s", TEST_DIR_WINDOWS),
+				"%s/file1.java,%s/file2.java;%s/file3.java".replace("%s", TEST_DIR_WINDOWS2),
+				"%s/file1.java,%s/file2.java;%s/file3.java".replace("%s", TEST_DIR_UNIX),
 				"src/test/resources/file1.java,src/test/resources/file1.py;src/test/resources/testfile"
 		};
 		final String desc = "Comma or semicolon separated paths: ";
@@ -202,7 +229,12 @@ public class IntegrationTest {
 
 	private static void testPathSurroundedBy() {
 		System.out.println();
-		final String[] files = new String[]{"file1.java", "C:\\integration\\file1.java", "C:/integration/file1.java", "/tmp/file1.java"};
+		final String[] files = new String[]{
+				"file1.java",
+				TEST_DIR_WINDOWS + "\\file1.java",
+				TEST_DIR_WINDOWS2 + "/file1.java",
+				TEST_DIR_UNIX + "/file1.java"
+		};
 		final String desc = "Path surrounded by: ";
 
 		for (final String pair : new String[]{"()", "[]", "''", "\"\""}) {
@@ -262,14 +294,14 @@ public class IntegrationTest {
 			System.out.println(desc + file);
 		}
 
-		System.out.println("\u001b[33mshould not be highlighted\u001b[0m: " + "~~~~");
+		System.out.println(yellow("should not be highlighted") + ": ~~~~");
 	}
 
 	private static void testTypeScriptCompiler() {
 		System.out.println();
-		System.out.println("error TS18003: No inputs were found in config file 'tsconfig.json'.");
+		System.out.println(red("error") + " " + white("TS18003") + ": No inputs were found in config file 'tsconfig.json'.");
 
-		System.out.println("file1.ts:5:13 - error TS2475: 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.");
+		System.out.println("file1.ts:5:13 - " + red("error") + " " + white("TS2475") + ": 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.");
 		System.out.println("5 console.log(Test);");
 		System.out.println("              ~~~~");
 		System.out.println("Found 1 error in file1.ts:5");
@@ -278,7 +310,7 @@ public class IntegrationTest {
 	private static void testGit() {
 		System.out.println();
 		System.out.println("Git console log: ");
-		System.out.println("\u001b[31mwarning: LF will be replaced by CRLF in README.md.\u001b[0m");
+		System.out.println(red("warning: LF will be replaced by CRLF in README.md."));
 		System.out.println("git update-index --cacheinfo 100644,5aaaff66f4b74af2f534be30b00020c93585f9d9,src/main/java/awesome/console/AwesomeLinkFilter.java --");
 		System.out.println("fatal: unable to access 'https://github.com/anthraxx/intellij-awesome-console.git/': schannel: failed to receive handshake, SSL/TLS connection failed");
 	}
@@ -298,10 +330,9 @@ public class IntegrationTest {
 		System.out.println(yellow("Windows PowerShell console:"));
 		System.out.println("PS C:\\Windows\\Temp> ");
 		System.out.println("PS C:\\Windows\\Temp> echo hello");
-		System.out.println("PS C:\\Windows\\Temp>..");
 		System.out.println("PS C:\\Windows\\Temp> ..");
-		System.out.println("PS C:\\Windows\\Temp>./build.gradle");
-		System.out.println("PS C:\\Windows\\Temp>../intellij-awesome-console");
+		System.out.println("PS C:\\Windows\\Temp> ./build.gradle");
+		System.out.println("PS C:\\Windows\\Temp> ../intellij-awesome-console");
 		System.out.println("PS C:\\Program Files (x86)\\Windows NT> echo hello");
 	}
 }
