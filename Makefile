@@ -7,13 +7,13 @@ test-files:
 	for F in $(FILES); do cp src/test/resources/{testfile,$$F}; done
 	cp src/test/resources/{testfile,"中文 空格.txt"}
 ifeq ($(OS), Windows_NT)
-	cmd /c 'rd /s /q C:\Windows\Temp\intellij-awesome-console 2>nul || exit /b 0'
-#	cmd /c 'mklink /J C:\Windows\Temp\intellij-awesome-console src\test\resources'
-	cmd /c 'mkdir C:\Windows\Temp\intellij-awesome-console || exit /b 0'
-	cmd /c 'copy src\test\resources C:\Windows\Temp\intellij-awesome-console'
+	-cmd /c 'rd /s /q C:\Windows\Temp\intellij-awesome-console 2>nul'
+#	-cmd /c 'mklink /J C:\Windows\Temp\intellij-awesome-console src\test\resources'
+	-cmd /c 'mkdir C:\Windows\Temp\intellij-awesome-console'
+	-cmd /c 'copy src\test\resources C:\Windows\Temp\intellij-awesome-console'
 
-	cmd /c 'cd src\test\resources && mklink /J symlink subdir'
-	cmd /c 'cd src\test\resources && mklink /J invalid-symlink unknown'
+	-cmd /c 'cd src\test\resources && mklink /J symlink subdir'
+	-cmd /c 'cd src\test\resources && mklink /J invalid-symlink unknown'
 else
 	rm -rf /tmp/intellij-awesome-console
 #	ln -sf $(shell pwd)/src/test/resources /tmp/intellij-awesome-console
