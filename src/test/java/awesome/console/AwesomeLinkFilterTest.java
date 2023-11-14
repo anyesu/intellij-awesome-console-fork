@@ -426,13 +426,13 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("error TS18003: No inputs were found in config file 'tsconfig.json'.", "tsconfig.json");
 
 		assertPathDetection(
-				"file1.ts:5:13 - error TS2475: 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.",
+				"file1.ts:5:13 - error TS2475: 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.\n",
 				"file1.ts:5:13",
 				5, 13
 		);
 		assertPathDetection("5 console.log(Test);");
 		assertUrlNoMatches("", "              ~~~~");
-		assertPathDetection("Found 1 error in file1.ts:5", "file1.ts:5", 5);
+		assertPathDetection("\n\nFound 1 error in file1.ts:5", "file1.ts:5", 5);
 	}
 
 	@Test
@@ -463,10 +463,15 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 
 	@Test
 	public void testWindowsDriveRoot() {
-		assertPathDetection("Windows drive root: C:\\", "C:\\");
-		assertPathDetection("Windows drive root: C:/", "C:/");
-		assertPathDetection("Windows drive root: C:\\\\", "C:\\\\");
-		assertPathDetection("Windows drive root: C:\\/", "C:\\/");
+		final String desc = "Windows drive root: ";
+
+		assertSimplePathDetection(desc, "C:\\");
+		assertSimplePathDetection(desc, "C:/");
+		assertSimplePathDetection(desc, "C:\\\\");
+		assertSimplePathDetection(desc, "C:\\/");
+
+		// `C:` without a slash is an invalid Windows drive
+		assertPathDetection(desc + "C:", "C");
 	}
 
 	@Test
@@ -531,6 +536,14 @@ public class AwesomeLinkFilterTest extends BasePlatformTestCase {
 		assertPathDetection("PS C:\\Windows\\Temp> ./build.gradle", "C:\\Windows\\Temp", "./build.gradle");
 		assertPathDetection("PS C:\\Windows\\Temp> ../intellij-awesome-console", "C:\\Windows\\Temp", "../intellij-awesome-console");
 		// assertPathDetection("PS C:\\Program Files (x86)\\Windows NT> echo hello", "C:\\Program Files (x86)\\Windows NT");
+	}
+
+	@Test
+	public void testJavaClass() {
+		assertSimplePathDetection("regular class name [%s]", "awesome.console.IntegrationTest:40", 40);
+		assertSimplePathDetection("scala class name [%s]", "awesome.console.IntegrationTest$:4", 4);
+
+		assertSimplePathDetection("class file: ", "build/classes/java/main/awesome/console/AwesomeLinkFilter.class:85:50", 85, 50);
 	}
 
 	private void assertFilePathDetection(@NotNull final String line, @NotNull final String... expected) {

@@ -57,10 +57,7 @@ public class IntegrationTest {
 		System.out.println("C:\\Windows/Temp");
 		System.out.println("C:/Windows/Temp");
 		System.out.println("C:/Windows/Temp,");
-		System.out.println("C:\\\\");
-		System.out.println("C:\\");
-		System.out.println("C:/");
-		System.out.println(yellow("C:"));
+		testWindowsDriveRoot();
 		System.out.println("[DEBUG] src/test/resources/file1.java:[4,4] cannot find symbol");
 		System.out.println("awesome.console.AwesomeLinkFilter:5");
 		System.out.println("awesome.console.AwesomeLinkFilter.java:50");
@@ -74,8 +71,6 @@ public class IntegrationTest {
 		System.out.println("colon at the end: resources/file1.java:50:10:");
 		System.out.printf("colon at the end: %s\\file1.java:5:4:\n", TEST_DIR_WINDOWS);
 		System.out.println("unicode 中.txt:5 yay");
-		System.out.println("regular class name [awesome.console.IntegrationTest:40]");
-		System.out.println("scala class name [awesome.console.IntegrationTest$:4]");
 		System.out.println("C:/project/node_modules/typescript/lib/lib.webworker.d.ts:1930:6:");
 
 		testFileInHomeDirectory();
@@ -160,6 +155,7 @@ public class IntegrationTest {
 		testJarURL();
 		testTypeScriptCompiler();
 		testGit();
+		testJavaClass();
 	}
 
 	private static String slashify(final String path) {
@@ -168,6 +164,10 @@ public class IntegrationTest {
 
 	private static String ansi16(final String s, final int color) {
 		return String.format("\u001b[%dm%s\u001b[0m", color, s);
+	}
+
+	private static String black(final String s) {
+		return ansi16(s, 30);
 	}
 
 	private static String red(final String s) {
@@ -182,8 +182,24 @@ public class IntegrationTest {
 		return ansi16(s, 35);
 	}
 
-	private static String white(final String s) {
-		return ansi16(s, 37);
+	private static String gray(final String s) {
+		return ansi16(s, 90);
+	}
+
+	private static String brightRed(final String s) {
+		return ansi16(s, 91);
+	}
+
+	private static String brightYellow(final String s) {
+		return ansi16(s, 93);
+	}
+
+	private static String brightCyan(final String s) {
+		return ansi16(s, 96);
+	}
+
+	private static String whiteBg(final String s) {
+		return ansi16(s, 37 + 10);
 	}
 
 	public static String[] getFileProtocols(final String path) {
@@ -299,12 +315,13 @@ public class IntegrationTest {
 
 	private static void testTypeScriptCompiler() {
 		System.out.println();
-		System.out.println(red("error") + " " + white("TS18003") + ": No inputs were found in config file 'tsconfig.json'.");
+		System.out.println(brightRed("error") + " " + gray("TS18003:") + " No inputs were found in config file 'tsconfig.json'.");
 
-		System.out.println("file1.ts:5:13 - " + red("error") + " " + white("TS2475") + ": 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.");
-		System.out.println("5 console.log(Test);");
-		System.out.println("              ~~~~");
-		System.out.println("Found 1 error in file1.ts:5");
+		System.out.print(brightCyan("file1.ts") + ":" + brightYellow("5") + ":" + brightYellow("13") + " - " + brightRed("error") + " " + gray("TS2475:"));
+		System.out.println(" 'const' enums can only be used in property or index access expressions or the right hand side of an import declaration or export assignment or type query.\n");
+		System.out.println(whiteBg(black("5")) + " console.log(Test);");
+		System.out.println(whiteBg(" ") + "             " + red("~~~~"));
+		System.out.println("\n\nFound 1 error in file1.ts" + gray(":5"));
 	}
 
 	private static void testGit() {
@@ -334,5 +351,24 @@ public class IntegrationTest {
 		System.out.println("PS C:\\Windows\\Temp> ./build.gradle");
 		System.out.println("PS C:\\Windows\\Temp> ../intellij-awesome-console");
 		System.out.println("PS C:\\Program Files (x86)\\Windows NT> echo hello");
+	}
+
+	private static void testJavaClass() {
+		System.out.println("regular class name [awesome.console.IntegrationTest:40]");
+		System.out.println("scala class name [awesome.console.IntegrationTest$:4]");
+
+		System.out.println("class file: build/classes/java/main/awesome/console/AwesomeLinkFilter.class:85:50");
+	}
+
+	private static void testWindowsDriveRoot() {
+		System.out.println();
+		final String desc = "Windows drive root: ";
+
+		System.out.println(desc + "C:\\");
+		System.out.println(desc + "C:/");
+		System.out.println(desc + "C:\\\\");
+		System.out.println(desc + "C:\\/");
+
+		System.out.println(desc + yellow("C:"));
 	}
 }
