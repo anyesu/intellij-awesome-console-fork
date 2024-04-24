@@ -205,28 +205,34 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 	@Nullable
 	@Override
 	public Result applyFilter(@NotNull final String line, final int endPoint) {
-		if (!shouldFilter(line)) {
-			return null;
-		}
-
-		prepareFilter();
-
-		final List<ResultItem> results = new ArrayList<>();
-		final int startPoint = endPoint - line.length();
-		final List<String> chunks = splitLine(line);
-		int offset = 0;
-
-		for (final String chunk : chunks) {
-			if (config.searchFiles) {
-				results.addAll(getResultItemsFile(chunk, startPoint + offset));
+		try {
+			if (!shouldFilter(line)) {
+				return null;
 			}
-			if (config.searchUrls) {
-				results.addAll(getResultItemsUrl(chunk, startPoint + offset));
-			}
-			offset += chunk.length();
-		}
 
-		return new Result(results);
+			prepareFilter();
+
+			final List<ResultItem> results = new ArrayList<>();
+			final int startPoint = endPoint - line.length();
+			final List<String> chunks = splitLine(line);
+			int offset = 0;
+
+			for (final String chunk : chunks) {
+				if (config.searchFiles) {
+					results.addAll(getResultItemsFile(chunk, startPoint + offset));
+				}
+				if (config.searchUrls) {
+					results.addAll(getResultItemsUrl(chunk, startPoint + offset));
+				}
+				offset += chunk.length();
+			}
+
+			return new Result(results);
+		} catch (Throwable t) {
+			// avoid crash
+			logger.error("Error while applying " + this + " to '" + line + "'", t);
+		}
+		return null;
 	}
 
 	private boolean shouldFilter(@NotNull final String line) {
@@ -696,6 +702,17 @@ public class AwesomeLinkFilter implements Filter, DumbAware {
 			}
 
 			String protocol = RegexUtils.tryMatchGroup(fileMatcher, "protocol");
+			if (null != protocol) {
+				// fixme
+				//   The captured input associated with a group is always the subsequence that the group most recently matched.
+				//   If a group is evaluated a second time because of quantification then its previously-captured value, if any, will be retained if the second evaluation fails.
+				//   Matching the string `"aba"` against the expression `(a(b)?)+`, for example, leaves group two set to `"b"`.
+				//   All captured input is discarded at the beginning of each match.
+				//   e.g. `file:` -> match == `e` , protocol == 'le:'
+				if (!match.contains(protocol)) {
+					protocol = null;
+				}
+			}
 			if (null != protocol) {
 				protocol = protocol.toLowerCase();
 				if (Stream.of("file:", JAR_PROTOCOL).anyMatch(protocol::startsWith)) {
